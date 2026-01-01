@@ -116,6 +116,36 @@ export default function BuildingDetail() {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
+  const getUnitStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      SIGNED: 'bg-green-100 text-green-800',
+      PARTIALLY_SIGNED: 'bg-yellow-100 text-yellow-800',
+      NOT_SIGNED: 'bg-gray-100 text-gray-800',
+      NOT_CONTACTED: 'bg-gray-100 text-gray-800',
+      NEGOTIATING: 'bg-blue-100 text-blue-800',
+      AGREED_TO_SIGN: 'bg-purple-100 text-purple-800',
+      FINALIZED: 'bg-green-100 text-green-800',
+      REFUSED: 'bg-red-100 text-red-800',
+      INACTIVE: 'bg-gray-100 text-gray-800',
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getUnitStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      SIGNED: t('units.status.signed'),
+      PARTIALLY_SIGNED: t('units.status.partiallySigned'),
+      NOT_SIGNED: t('units.status.notSigned'),
+      NOT_CONTACTED: t('units.status.notContacted'),
+      NEGOTIATING: t('units.status.negotiating'),
+      AGREED_TO_SIGN: t('units.status.agreedToSign'),
+      FINALIZED: t('units.status.finalized'),
+      REFUSED: t('units.status.refused'),
+      INACTIVE: t('units.status.inactive'),
+    };
+    return labels[status] || status;
+  };
+
   const handleEditBuilding = () => {
     setIsEditModalOpen(true);
   };
@@ -216,7 +246,7 @@ export default function BuildingDetail() {
             {building.signature_percentage.toFixed(1)}%
           </div>
           <div className="text-sm text-gray-500 mt-1">
-            {signedOwners} {t('buildings.of')} {totalOwners} {t('buildings.owners')}
+            {building.units_signed || 0} {t('buildings.of')} {building.total_units || units.length} {t('buildings.units')}
           </div>
         </div>
 
@@ -334,9 +364,6 @@ export default function BuildingDetail() {
                         {t('buildings.owners')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t('buildings.signatureProgress')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         {t('buildings.status')}
                       </th>
                     </tr>
@@ -364,29 +391,10 @@ export default function BuildingDetail() {
                           {unit.total_owners}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            <div className="w-24 bg-gray-200 rounded-full h-2">
-                              <div
-                                className={`h-2 rounded-full ${
-                                  unit.signature_percentage >= 100
-                                    ? 'bg-green-500'
-                                    : unit.signature_percentage >= 50
-                                    ? 'bg-yellow-500'
-                                    : 'bg-red-500'
-                                }`}
-                                style={{ width: `${Math.min(unit.signature_percentage, 100)}%` }}
-                              />
-                            </div>
-                            <span className="text-sm font-medium text-gray-900">
-                              {unit.signature_percentage.toFixed(0)}%
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(unit.unit_status)}`}
+                            className={`px-2 py-1 text-xs font-medium rounded ${getUnitStatusColor(unit.unit_status)}`}
                           >
-                            {unit.unit_status}
+                            {getUnitStatusLabel(unit.unit_status)}
                           </span>
                         </td>
                       </tr>

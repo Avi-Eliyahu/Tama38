@@ -236,6 +236,10 @@ async def sign_document_by_token(
     if owner:
         owner.owner_status = "SIGNED"
         owner.signature_date = datetime.utcnow().date()
+        
+        # Update unit status based on all owners
+        from app.services.unit_status import update_unit_status
+        update_unit_status(str(owner.unit_id), db)
     
     db.commit()
     db.refresh(signature)
@@ -329,6 +333,10 @@ async def approve_signature(
     owner = db.query(Owner).filter(Owner.owner_id == signature.owner_id).first()
     if owner:
         owner.owner_status = "SIGNED"
+        
+        # Update unit status based on all owners
+        from app.services.unit_status import update_unit_status
+        update_unit_status(str(owner.unit_id), db)
     
     db.commit()
     
@@ -338,6 +346,8 @@ async def approve_signature(
     owner = db.query(Owner).filter(Owner.owner_id == signature.owner_id).first()
     if owner:
         unit = db.query(Unit).filter(Unit.unit_id == owner.unit_id).first()
+        if unit:
+            calculate_building_majority(str(unit.building_id), db)(Unit.unit_id == owner.unit_id).first()
         if unit:
             try:
                 calculate_building_majority(str(unit.building_id), db)

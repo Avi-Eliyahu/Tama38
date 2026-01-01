@@ -252,6 +252,20 @@
     "endDate": "End Date",
     "availableReports": "Available Reports"
   },
+  "units": {
+    "status": {
+      "title": "Signature Status",
+      "signed": "Signed",
+      "partiallySigned": "Partially Signed",
+      "notSigned": "Not Signed",
+      "notContacted": "Not Contacted",
+      "negotiating": "Negotiating",
+      "agreedToSign": "Agreed to Sign",
+      "finalized": "Finalized",
+      "refused": "Refused",
+      "inactive": "Inactive"
+    }
+  },
   "wizard": {
     "step1": "Project Information",
     "step2": "Buildings",

@@ -109,6 +109,36 @@ export default function UnitDetail() {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
+  const getUnitStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      SIGNED: 'bg-green-100 text-green-800',
+      PARTIALLY_SIGNED: 'bg-yellow-100 text-yellow-800',
+      NOT_SIGNED: 'bg-gray-100 text-gray-800',
+      NOT_CONTACTED: 'bg-gray-100 text-gray-800',
+      NEGOTIATING: 'bg-blue-100 text-blue-800',
+      AGREED_TO_SIGN: 'bg-purple-100 text-purple-800',
+      FINALIZED: 'bg-green-100 text-green-800',
+      REFUSED: 'bg-red-100 text-red-800',
+      INACTIVE: 'bg-gray-100 text-gray-800',
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getUnitStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      SIGNED: t('units.status.signed'),
+      PARTIALLY_SIGNED: t('units.status.partiallySigned'),
+      NOT_SIGNED: t('units.status.notSigned'),
+      NOT_CONTACTED: t('units.status.notContacted'),
+      NEGOTIATING: t('units.status.negotiating'),
+      AGREED_TO_SIGN: t('units.status.agreedToSign'),
+      FINALIZED: t('units.status.finalized'),
+      REFUSED: t('units.status.refused'),
+      INACTIVE: t('units.status.inactive'),
+    };
+    return labels[status] || status;
+  };
+
   const getSentimentColor = (sentiment?: string) => {
     const colors: Record<string, string> = {
       POSITIVE: 'bg-green-100 text-green-800',
@@ -208,10 +238,12 @@ export default function UnitDetail() {
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="text-sm font-medium text-gray-600 mb-1">
-            {t('buildings.signatureProgress')}
+            {t('units.status.title')}
           </div>
-          <div className="text-3xl font-bold text-gray-900">
-            {unit.signature_percentage.toFixed(1)}%
+          <div className="text-lg font-semibold text-gray-900">
+            <span className={`px-3 py-1 text-sm font-medium rounded ${getUnitStatusColor(unit.unit_status)}`}>
+              {getUnitStatusLabel(unit.unit_status)}
+            </span>
           </div>
           <div className="text-sm text-gray-500 mt-1">
             {unit.owners_signed} {t('buildings.of')} {unit.total_owners} {t('buildings.signed')}

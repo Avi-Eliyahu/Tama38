@@ -23,7 +23,7 @@ class Unit(Base):
     room_count = Column(SmallInteger)
     estimated_value_ils = Column(Numeric(12, 2))
     estimated_renovation_cost_ils = Column(Numeric(12, 2))
-    unit_status = Column(Enum('NOT_CONTACTED', 'NEGOTIATING', 'AGREED_TO_SIGN', 'SIGNED', 'FINALIZED', 'REFUSED', 'INACTIVE', name='unit_status'), default='NOT_CONTACTED')
+    unit_status = Column(Enum('NOT_CONTACTED', 'NEGOTIATING', 'AGREED_TO_SIGN', 'PARTIALLY_SIGNED', 'SIGNED', 'FINALIZED', 'REFUSED', 'INACTIVE', name='unit_status'), default='NOT_CONTACTED')
     total_owners = Column(Integer, default=0)
     owners_signed = Column(Integer, default=0)
     signature_percentage = Column(Numeric(5, 2), default=0)

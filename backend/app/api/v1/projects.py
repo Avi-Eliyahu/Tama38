@@ -264,7 +264,11 @@ async def delete_project(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("SUPER_ADMIN"))
 ):
-    """Soft delete project"""
+    """Soft delete project and all related entities (buildings, units, owners)"""
+    from app.models.building import Building
+    from app.models.unit import Unit
+    from app.models.owner import Owner
+    
     project = db.query(Project).filter(
         Project.project_id == project_id,
         Project.is_deleted == False
@@ -276,6 +280,37 @@ async def delete_project(
             detail="Project not found"
         )
     
+    # Soft delete all related buildings
+    buildings = db.query(Building).filter(
+        Building.project_id == project_id,
+        Building.is_deleted == False
+    ).all()
+    
+    for building in buildings:
+        building.is_deleted = True
+        building.updated_at = datetime.utcnow()
+        
+        # Soft delete all units in this building
+        units = db.query(Unit).filter(
+            Unit.building_id == building.building_id,
+            Unit.is_deleted == False
+        ).all()
+        
+        for unit in units:
+            unit.is_deleted = True
+            unit.updated_at = datetime.utcnow()
+            
+            # Soft delete all owners of this unit
+            owners = db.query(Owner).filter(
+                Owner.unit_id == unit.unit_id,
+                Owner.is_deleted == False
+            ).all()
+            
+            for owner in owners:
+                owner.is_deleted = True
+                owner.updated_at = datetime.utcnow()
+    
+    # Soft delete the project
     project.is_deleted = True
     project.updated_by = current_user.user_id
     project.updated_at = datetime.utcnow()
