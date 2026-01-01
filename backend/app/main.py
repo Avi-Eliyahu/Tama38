@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.middleware import RequestIDMiddleware
-from app.api.v1 import auth, projects, buildings, units, owners, wizard, interactions, documents, approvals, majority, tasks, dashboard, whatsapp, files, agents, reports, alerts
+from app.api.v1 import auth, projects, buildings, units, owners, wizard, interactions, documents, approvals, majority, tasks, dashboard, whatsapp, files, agents, reports, alerts, users
 
 # Setup logging first
 setup_logging()
@@ -50,6 +50,7 @@ app.include_router(files.router, prefix=settings.API_V1_PREFIX)
 app.include_router(agents.router, prefix=settings.API_V1_PREFIX)
 app.include_router(reports.router, prefix=settings.API_V1_PREFIX)
 app.include_router(alerts.router, prefix=settings.API_V1_PREFIX)
+app.include_router(users.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/health")

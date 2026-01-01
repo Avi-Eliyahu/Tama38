@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Building, CreateBuildingDto } from '../services/buildings';
 import { buildingsService } from '../services/buildings';
+import { usersService, User } from '../services/users';
 
 interface BuildingEditFormProps {
   building: Building;
@@ -13,13 +14,32 @@ export default function BuildingEditForm({ building, onSave, onCancel }: Buildin
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [agents, setAgents] = useState<User[]>([]);
+  const [loadingAgents, setLoadingAgents] = useState(true);
   const [formData, setFormData] = useState<Partial<CreateBuildingDto>>({
     building_name: building.building_name,
     building_code: building.building_code || '',
     address: building.address || '',
     floor_count: building.floor_count,
     total_units: building.total_units,
+    assigned_agent_id: (building as any).assigned_agent_id || '',
   });
+
+  useEffect(() => {
+    loadAgents();
+  }, []);
+
+  const loadAgents = async () => {
+    try {
+      setLoadingAgents(true);
+      const agentsList = await usersService.getAgents();
+      setAgents(agentsList);
+    } catch (err) {
+      console.error('[BUILDING_EDIT] Error loading agents', err);
+    } finally {
+      setLoadingAgents(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +130,28 @@ export default function BuildingEditForm({ building, onSave, onCancel }: Buildin
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             placeholder={t('buildings.units')}
           />
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {t('buildings.assignedAgent')}
+          </label>
+          <select
+            value={formData.assigned_agent_id || ''}
+            onChange={(e) => setFormData({ ...formData, assigned_agent_id: e.target.value || undefined })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            disabled={loadingAgents}
+          >
+            <option value="">{t('buildings.unassigned')}</option>
+            {agents.map(agent => (
+              <option key={agent.user_id} value={agent.user_id}>
+                {agent.full_name} ({agent.email})
+              </option>
+            ))}
+          </select>
+          {loadingAgents && (
+            <p className="mt-1 text-xs text-gray-500">{t('common.loading')}...</p>
+          )}
         </div>
       </div>
 

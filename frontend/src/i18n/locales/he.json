@@ -21,7 +21,10 @@
     "yes": "כן",
     "no": "לא",
     "clear": "נקה",
-    "all": "הכל"
+    "all": "הכל",
+    "saving": "שומר...",
+    "updating": "מעדכן...",
+    "optional": "אופציונלי"
   },
   "auth": {
     "login": "התחברות",
@@ -128,7 +131,11 @@
     "interactionsTabDescription": "אינטראקציות הבניין יוצגו כאן",
     "tasksTabComingSoon": "כרטיסיית משימות תגיע בקרוב",
     "tasksTabDescription": "משימות הבניין יוצגו כאן",
-    "createThroughWizard": "צור בניינים באמצעות אשף הפרויקט"
+    "createThroughWizard": "צור בניינים באמצעות אשף הפרויקט",
+    "assignedAgent": "סוכן מוקצה",
+    "unassigned": "לא מוקצה",
+    "assigned": "מוקצה",
+    "noAgentAssigned": "אין סוכן מוקצה"
   },
   "owners": {
     "title": "בעלים",
@@ -150,7 +157,28 @@
     "tryDifferentSearch": "נסה שאילתת חיפוש אחרת",
     "willAppear": "בעלים יופיעו כאן לאחר הוספה דרך אשף הפרויקט או ידנית.",
     "searchPlaceholder": "חפש לפי שם, טלפון או אימייל...",
-    "loadingOwners": "טוען בעלים..."
+    "loadingOwners": "טוען בעלים...",
+    "changeStatus": "שנה סטטוס בעלים",
+    "currentStatus": "סטטוס נוכחי",
+    "newStatus": "סטטוס חדש",
+    "updateStatus": "עדכן סטטוס",
+    "statusChangeNotes": "הוסף הערות על שינוי סטטוס זה (אופציונלי)",
+    "notes": "הערות",
+    "pendingApproval": "אישור ממתין",
+    "waitingForManagerApproval": "ממתין לאישור מנהל",
+    "approvalTaskWillBeCreated": "תיווצר משימת אישור למנהלים לבדיקה ואישור בקשת החתימה הזו.",
+    "invalidStatusForAgent": "סוכנים יכולים להגדיר רק סטטוסי תהליך (NOT_CONTACTED, NEGOTIATING, AGREED_TO_SIGN, WAIT_FOR_SIGN)"
+  },
+  "ownerStatuses": {
+    "NOT_CONTACTED": "לא יצר קשר",
+    "PENDING_SIGNATURE": "חתימה ממתינה",
+    "NEGOTIATING": "מתמקח",
+    "AGREED_TO_SIGN": "הסכים לחתום",
+    "WAIT_FOR_SIGN": "ממתין לחתימה",
+    "SIGNED": "חתום",
+    "REFUSED": "סירב",
+    "DECEASED": "נפטר",
+    "INCAPACITATED": "חסר יכולת"
   },
   "interactions": {
     "title": "אינטראקציות",
@@ -202,7 +230,12 @@
     "noTasks": "לא נמצאו משימות",
     "noOverdueTasks": "אין משימות מאוחרות",
     "allUpToDate": "מצוין! כל המשימות מעודכנות.",
-    "willAppear": "משימות יופיעו כאן לאחר הקצאה."
+    "willAppear": "משימות יופיעו כאן לאחר הקצאה.",
+    "approveSignature": "אשר חתימה",
+    "approvingSignature": "מאשר חתימה...",
+    "signatureApproved": "חתימה אושרה בהצלחה",
+    "managerReview": "סקירת מנהל",
+    "approvalTask": "משימת אישור"
   },
   "approvals": {
     "title": "אישורים",

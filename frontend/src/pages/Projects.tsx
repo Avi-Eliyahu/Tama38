@@ -16,6 +16,8 @@ export default function Projects() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const currentUser = authService.getCurrentUserSync();
   const isAdmin = currentUser?.role === 'SUPER_ADMIN';
+  const isManager = currentUser?.role === 'PROJECT_MANAGER';
+  const canCreateProject = isAdmin || isManager;
 
   useEffect(() => {
     loadProjects();
@@ -96,6 +98,15 @@ export default function Projects() {
             {t('projects.subtitle')}
           </p>
         </div>
+        {canCreateProject && (
+          <Link
+            to="/projects/new"
+            className="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+          >
+            <span className="mr-2">+</span>
+            {t('projects.createProject')}
+          </Link>
+        )}
       </div>
 
       {error && (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { tasksService, Task } from '../services/tasks';
+import { authService } from '../services/auth';
 
 export default function Tasks() {
   const { t } = useTranslation();
@@ -43,6 +44,24 @@ export default function Tasks() {
       setError(err.response?.data?.detail || t('common.error'));
     }
   };
+
+  const handleApproveSignature = async (taskId: string) => {
+    if (!window.confirm(t('tasks.approveSignature') + '?')) {
+      return;
+    }
+    try {
+      await tasksService.approveSignature(taskId);
+      setError(null);
+      loadTasks();
+      alert(t('tasks.signatureApproved'));
+    } catch (err: any) {
+      console.error('[TASKS] Error approving signature', err);
+      setError(err.response?.data?.detail || t('common.error'));
+    }
+  };
+
+  const currentUser = authService.getCurrentUserSync();
+  const isManager = currentUser?.role === 'PROJECT_MANAGER' || currentUser?.role === 'SUPER_ADMIN';
 
   const getPriorityColor = (priority: string) => {
     const colors: Record<string, string> = {
@@ -182,14 +201,24 @@ export default function Tasks() {
                     )}
                   </div>
                 </div>
-                {task.status !== 'COMPLETED' && (
-                  <button
-                    onClick={() => handleComplete(task.task_id)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
-                  >
-                    {t('tasks.markComplete')}
-                  </button>
-                )}
+                <div className="flex gap-2">
+                  {task.status !== 'COMPLETED' && task.task_type === 'MANAGER_REVIEW' && task.owner_id && isManager && (
+                    <button
+                      onClick={() => handleApproveSignature(task.task_id)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                    >
+                      {t('tasks.approveSignature')}
+                    </button>
+                  )}
+                  {task.status !== 'COMPLETED' && (
+                    <button
+                      onClick={() => handleComplete(task.task_id)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+                    >
+                      {t('tasks.markComplete')}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}

@@ -11,6 +11,7 @@ export interface Building {
   current_status: string;
   signature_percentage: number;
   traffic_light_status: string;
+  assigned_agent_id?: string;
   created_at: string;
 }
 

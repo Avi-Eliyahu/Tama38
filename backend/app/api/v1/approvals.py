@@ -341,16 +341,18 @@ async def approve_signature(
     db.commit()
     
     # Trigger majority recalculation
-    from app.services.majority import calculate_building_majority
+    from app.services.majority import calculate_building_majority, calculate_project_majority
     from app.models.unit import Unit
+    from app.models.building import Building
     owner = db.query(Owner).filter(Owner.owner_id == signature.owner_id).first()
     if owner:
         unit = db.query(Unit).filter(Unit.unit_id == owner.unit_id).first()
         if unit:
-            calculate_building_majority(str(unit.building_id), db)(Unit.unit_id == owner.unit_id).first()
-        if unit:
             try:
                 calculate_building_majority(str(unit.building_id), db)
+                building = db.query(Building).filter(Building.building_id == unit.building_id).first()
+                if building:
+                    calculate_project_majority(str(building.project_id), db)
             except Exception as e:
                 logger.error(f"Failed to recalculate majority: {e}")
     

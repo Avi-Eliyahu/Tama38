@@ -12,6 +12,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.owner import Owner
 from app.models.unit import Unit
+from app.models.building import Building
 from app.api.dependencies import get_current_user
 import logging
 
@@ -64,7 +65,34 @@ async def list_owners(
     
     # Role-based filtering
     if current_user.role == "AGENT":
-        query = query.filter(Owner.assigned_agent_id == current_user.user_id)
+        # Check building assignment instead of owner assignment
+        if unit_id:
+            # Filter by building assignment instead of owner assignment
+            from app.models.unit import Unit
+            from app.models.building import Building
+            unit = db.query(Unit).filter(Unit.unit_id == unit_id).first()
+            if unit:
+                building = db.query(Building).filter(Building.building_id == unit.building_id).first()
+                if building and building.assigned_agent_id == current_user.user_id:
+                    # Building is assigned to this agent, show all owners in this unit
+                    pass  # No additional filter needed
+                else:
+                    # Building not assigned to agent, filter by owner assignment as fallback
+                    query = query.filter(Owner.assigned_agent_id == current_user.user_id)
+            else:
+                # Unit not found, filter by owner assignment
+                query = query.filter(Owner.assigned_agent_id == current_user.user_id)
+        else:
+            # No unit_id specified, filter by building assignment OR owner assignment via join
+            from app.models.unit import Unit
+            from app.models.building import Building
+            from sqlalchemy import or_
+            query = query.join(Unit).join(Building).filter(
+                or_(
+                    Building.assigned_agent_id == current_user.user_id,
+                    Owner.assigned_agent_id == current_user.user_id
+                )
+            )
     
     owners = query.offset(skip).limit(limit).all()
     # Convert UUIDs to strings for response
@@ -312,4 +340,151 @@ async def search_owners(
         )
         for o in owners
     ]
+
+
+class OwnerStatusUpdate(BaseModel):
+    owner_status: str
+    notes: Optional[str] = None
+
+
+class OwnerStatusUpdateResponse(BaseModel):
+    owner_id: str
+    owner_status: str
+    approval_task_id: Optional[str] = None
+    message: str
+
+
+@router.put("/{owner_id}/status", response_model=OwnerStatusUpdateResponse)
+async def update_owner_status(
+    owner_id: UUID,
+    status_data: OwnerStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Update owner status (agent only, with approval workflow for SIGN)"""
+    # Get owner
+    owner = db.query(Owner).filter(
+        Owner.owner_id == owner_id,
+        Owner.is_deleted == False
+    ).first()
+    
+    if not owner:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Owner not found"
+        )
+    
+    # Get unit and building for permission check
+    unit = db.query(Unit).filter(Unit.unit_id == owner.unit_id).first()
+    if not unit:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unit not found"
+        )
+    
+    # Permission check: Agents can only update owners in buildings assigned to them
+    if current_user.role == "AGENT":
+        from app.services.agent_permissions import verify_agent_has_owner_access
+        if not verify_agent_has_owner_access(current_user.user_id, owner_id, db):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only update owners in buildings assigned to you"
+            )
+    elif current_user.role not in ["SUPER_ADMIN", "PROJECT_MANAGER"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only agents, managers, and admins can update owner status"
+        )
+    
+    # Validate status: Agents can only set workflow statuses
+    workflow_statuses = ["NOT_CONTACTED", "NEGOTIATING", "AGREED_TO_SIGN", "WAIT_FOR_SIGN"]
+    restricted_statuses = ["SIGNED", "REFUSED"]
+    
+    if current_user.role == "AGENT":
+        if status_data.owner_status in restricted_statuses:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Agents cannot set status to {status_data.owner_status}. Use WAIT_FOR_SIGN to request approval."
+            )
+        if status_data.owner_status not in workflow_statuses:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid status for agent: {status_data.owner_status}"
+            )
+    
+    # If setting to WAIT_FOR_SIGN or requesting SIGN, create approval task
+    approval_task_id = None
+    if status_data.owner_status == "WAIT_FOR_SIGN":
+        from app.services.task_creation import create_signature_approval_task
+        try:
+            approval_task = create_signature_approval_task(
+                owner_id=owner_id,
+                building_id=unit.building_id,
+                requested_by_agent_id=current_user.user_id,
+                db=db
+            )
+            approval_task_id = str(approval_task.task_id)
+            logger.info(
+                "Approval task created for owner status change",
+                extra={
+                    "owner_id": str(owner_id),
+                    "task_id": approval_task_id,
+                    "requested_by": str(current_user.user_id),
+                }
+            )
+        except Exception as e:
+            logger.error(f"Failed to create approval task: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create approval task"
+            )
+    
+    # Update owner status
+    old_status = owner.owner_status
+    owner.owner_status = status_data.owner_status
+    if status_data.notes:
+        # Store notes in owner record if needed (could add notes field to Owner model)
+        pass
+    
+    db.commit()
+    db.refresh(owner)
+    
+    # Trigger cascade recalculation (unless status is WAIT_FOR_SIGN, which waits for approval)
+    if status_data.owner_status != "WAIT_FOR_SIGN":
+        from app.services.unit_status import update_unit_status
+        from app.services.majority import calculate_building_majority, calculate_project_majority
+        
+        try:
+            update_unit_status(str(unit.unit_id), db)
+            calculate_building_majority(str(unit.building_id), db)
+            
+            # Get project_id from building
+            building = db.query(Building).filter(Building.building_id == unit.building_id).first()
+            if building:
+                calculate_project_majority(str(building.project_id), db)
+        except Exception as e:
+            logger.error(f"Failed to recalculate progress: {e}")
+            # Don't fail the request, just log the error
+    
+    message = f"Owner status updated from {old_status} to {status_data.owner_status}"
+    if approval_task_id:
+        message += ". Approval task created for manager review."
+    
+    logger.info(
+        "Owner status updated",
+        extra={
+            "owner_id": str(owner_id),
+            "old_status": old_status,
+            "new_status": status_data.owner_status,
+            "user_id": str(current_user.user_id),
+            "approval_task_id": approval_task_id,
+        }
+    )
+    
+    return OwnerStatusUpdateResponse(
+        owner_id=str(owner_id),
+        owner_status=status_data.owner_status,
+        approval_task_id=approval_task_id,
+        message=message
+    )
 

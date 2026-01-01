@@ -11,7 +11,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.building import Building
 from app.models.project import Project
-from app.api.dependencies import get_current_user
+from app.api.dependencies import get_current_user, require_role
 import logging
 
 logger = logging.getLogger(__name__)
@@ -40,6 +40,7 @@ class BuildingResponse(BaseModel):
     current_status: str
     signature_percentage: float
     traffic_light_status: str
+    assigned_agent_id: Optional[str] = None
     created_at: datetime
     
     class Config:
@@ -83,6 +84,7 @@ async def list_buildings(
             current_status=b.current_status,
             signature_percentage=float(b.signature_percentage) if b.signature_percentage is not None else 0.0,
             traffic_light_status=b.traffic_light_status,
+            assigned_agent_id=str(b.assigned_agent_id) if b.assigned_agent_id else None,
             created_at=b.created_at,
         )
         for b in buildings
@@ -144,6 +146,7 @@ async def create_building(
         current_status=building.current_status,
         signature_percentage=float(building.signature_percentage),
         traffic_light_status=building.traffic_light_status,
+        assigned_agent_id=str(building.assigned_agent_id) if building.assigned_agent_id else None,
         created_at=building.created_at,
     )
 
@@ -178,6 +181,98 @@ async def get_building(
         current_status=building.current_status,
         signature_percentage=float(building.signature_percentage),
         traffic_light_status=building.traffic_light_status,
+        assigned_agent_id=str(building.assigned_agent_id) if building.assigned_agent_id else None,
+        created_at=building.created_at,
+    )
+
+
+class BuildingUpdate(BaseModel):
+    building_name: Optional[str] = None
+    building_code: Optional[str] = None
+    address: Optional[str] = None
+    floor_count: Optional[int] = None
+    total_units: Optional[int] = None
+    assigned_agent_id: Optional[str] = None
+
+
+@router.put("/{building_id}", response_model=BuildingResponse)
+async def update_building(
+    building_id: UUID,
+    building_data: BuildingUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
+):
+    """Update building (admin/manager only)"""
+    building = db.query(Building).filter(
+        Building.building_id == building_id,
+        Building.is_deleted == False
+    ).first()
+    
+    if not building:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Building not found"
+        )
+    
+    # Update fields
+    if building_data.building_name is not None:
+        building.building_name = building_data.building_name
+    if building_data.building_code is not None:
+        building.building_code = building_data.building_code
+    if building_data.address is not None:
+        building.address = building_data.address
+    if building_data.floor_count is not None:
+        building.floor_count = building_data.floor_count
+    if building_data.total_units is not None:
+        building.total_units = building_data.total_units
+    
+    # Handle agent assignment
+    if building_data.assigned_agent_id is not None:
+        if building_data.assigned_agent_id == "":
+            # Unassign agent
+            building.assigned_agent_id = None
+        else:
+            # Verify agent exists and is an AGENT role
+            from app.models.user import User
+            agent = db.query(User).filter(
+                User.user_id == UUID(building_data.assigned_agent_id),
+                User.role == "AGENT",
+                User.is_active == True
+            ).first()
+            
+            if not agent:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Agent not found or inactive"
+                )
+            
+            building.assigned_agent_id = UUID(building_data.assigned_agent_id)
+    
+    db.commit()
+    db.refresh(building)
+    
+    logger.info(
+        "Building updated",
+        extra={
+            "building_id": str(building_id),
+            "user_id": str(current_user.user_id),
+            "assigned_agent_id": str(building.assigned_agent_id) if building.assigned_agent_id else None,
+        }
+    )
+    
+    # Convert UUIDs to strings for response
+    return BuildingResponse(
+        building_id=str(building.building_id),
+        project_id=str(building.project_id),
+        building_name=building.building_name,
+        building_code=building.building_code,
+        address=building.address,
+        floor_count=building.floor_count,
+        total_units=building.total_units,
+        current_status=building.current_status,
+        signature_percentage=float(building.signature_percentage),
+        traffic_light_status=building.traffic_light_status,
+        assigned_agent_id=str(building.assigned_agent_id) if building.assigned_agent_id else None,
         created_at=building.created_at,
     )
 

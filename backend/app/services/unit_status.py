@@ -51,9 +51,21 @@ def update_unit_status(unit_id: str, db: Session) -> str:
     Calculate and update unit status in database.
     Returns the calculated status.
     """
+    import json
+    import time
+    log_path = r'c:\projects\pinoy\.cursor\debug.log'
+    
     unit = db.query(Unit).filter(Unit.unit_id == unit_id).first()
     if not unit:
         raise ValueError(f"Unit {unit_id} not found")
+    
+    # #region agent log
+    try:
+        old_unit_status = unit.unit_status
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"unit_status.py:55","message":"update_unit_status entry","data":{"unit_id":str(unit_id),"current_unit_status":old_unit_status},"timestamp":int(time.time()*1000)})+'\n')
+    except: pass
+    # #endregion
     
     # Get all current owners
     owners = db.query(Owner).filter(
@@ -66,6 +78,14 @@ def update_unit_status(unit_id: str, db: Session) -> str:
     unit.total_owners = len(owners)
     unit.owners_signed = sum(1 for owner in owners if owner.owner_status == 'SIGNED')
     
+    # #region agent log
+    try:
+        owner_statuses = [o.owner_status for o in owners]
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"unit_status.py:70","message":"owner statuses before calculation","data":{"unit_id":str(unit_id),"total_owners":unit.total_owners,"owners_signed":unit.owners_signed,"owner_statuses":owner_statuses},"timestamp":int(time.time()*1000)})+'\n')
+    except: pass
+    # #endregion
+    
     # Calculate status
     if not owners:
         new_status = 'NOT_CONTACTED'
@@ -76,10 +96,28 @@ def update_unit_status(unit_id: str, db: Session) -> str:
     else:
         new_status = 'NOT_CONTACTED'
     
-    # Update unit status (only if it's a signature-related status)
-    # Keep other statuses like NEGOTIATING, REFUSED, etc. if they're more specific
-    if unit.unit_status in ['NOT_CONTACTED', 'SIGNED', 'PARTIALLY_SIGNED']:
+    # #region agent log
+    try:
+        will_update = unit.unit_status in ['NOT_CONTACTED', 'SIGNED', 'PARTIALLY_SIGNED']
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"unit_status.py:82","message":"status calculation result","data":{"unit_id":str(unit_id),"calculated_status":new_status,"current_status":old_unit_status,"will_update":will_update},"timestamp":int(time.time()*1000)})+'\n')
+    except: pass
+    # #endregion
+    
+    # Update unit status - ALWAYS update if all owners signed (regardless of current status)
+    # If all owners signed, unit should be SIGNED
+    if unit.owners_signed == unit.total_owners and unit.total_owners > 0:
+        unit.unit_status = 'SIGNED'
+    elif unit.unit_status in ['NOT_CONTACTED', 'SIGNED', 'PARTIALLY_SIGNED']:
+        # Only update signature-related statuses, keep others like NEGOTIATING, REFUSED
         unit.unit_status = new_status
+    
+    # #region agent log
+    try:
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"unit_status.py:95","message":"unit status after update","data":{"unit_id":str(unit_id),"old_status":old_unit_status,"new_status":unit.unit_status},"timestamp":int(time.time()*1000)})+'\n')
+    except: pass
+    # #endregion
     
     db.commit()
     

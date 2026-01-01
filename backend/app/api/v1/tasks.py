@@ -11,7 +11,7 @@ from datetime import datetime, date
 from app.core.database import get_db
 from app.models.user import User
 from app.models.task import Task
-from app.api.dependencies import get_current_user
+from app.api.dependencies import get_current_user, require_role
 import logging
 
 logger = logging.getLogger(__name__)
@@ -229,6 +229,10 @@ async def complete_task(
     task.status = "COMPLETED"
     task.completed_at = datetime.utcnow()
     
+    # If this is a MANAGER_REVIEW task with an owner_id, it means signature approval
+    # But we don't auto-approve here - use the approve-signature endpoint instead
+    # This endpoint just marks the task as completed
+    
     db.commit()
     db.refresh(task)
     
@@ -245,5 +249,179 @@ async def complete_task(
         status=task.status,
         priority=task.priority,
         created_at=task.created_at,
+    )
+
+
+class SignatureApprovalRequest(BaseModel):
+    notes: Optional[str] = None
+
+
+class SignatureApprovalResponse(BaseModel):
+    task_id: str
+    owner_id: str
+    owner_status: str
+    message: str
+
+
+@router.post("/{task_id}/approve-signature", response_model=SignatureApprovalResponse)
+async def approve_signature(
+    task_id: UUID,
+    approval_data: Optional[SignatureApprovalRequest] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
+):
+    """Approve signature via task (manager/admin only)"""
+    task = db.query(Task).filter(Task.task_id == task_id).first()
+    
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    
+    # Verify this is a MANAGER_REVIEW task
+    if task.task_type != "MANAGER_REVIEW":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This endpoint is only for MANAGER_REVIEW tasks"
+        )
+    
+    # Verify task is assigned to current user (or allow any manager/admin)
+    if task.assigned_to_agent_id != current_user.user_id and current_user.role != "SUPER_ADMIN":
+        # Allow super admins to approve any task, but managers can only approve their own
+        if current_user.role == "PROJECT_MANAGER":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only approve tasks assigned to you"
+            )
+    
+    if not task.owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Task does not have an associated owner"
+        )
+    
+    # Get owner
+    from app.models.owner import Owner
+    owner = db.query(Owner).filter(Owner.owner_id == task.owner_id).first()
+    
+    if not owner:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Owner not found"
+        )
+    
+    # Verify owner is in WAIT_FOR_SIGN status
+    if owner.owner_status != "WAIT_FOR_SIGN":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Owner is not in WAIT_FOR_SIGN status. Current status: {owner.owner_status}"
+        )
+    
+    # Update owner status to SIGNED
+    owner.owner_status = "SIGNED"
+    owner.signature_date = datetime.utcnow().date()
+    
+    # Mark task as completed
+    task.status = "COMPLETED"
+    task.completed_at = datetime.utcnow()
+    if approval_data and approval_data.notes:
+        task.notes = (task.notes or "") + f"\n[Approval Notes]: {approval_data.notes}"
+    
+    db.commit()
+    
+    # Trigger cascade recalculation
+    from app.models.unit import Unit
+    from app.models.building import Building
+    from app.services.unit_status import update_unit_status
+    from app.services.majority import calculate_building_majority, calculate_project_majority
+    import json
+    import time
+    log_path = r'c:\projects\pinoy\.cursor\debug.log'
+    
+    # #region agent log
+    try:
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:333","message":"starting cascade recalculation","data":{"owner_id":str(task.owner_id),"owner_status":owner.owner_status,"unit_id":str(owner.unit_id)},"timestamp":int(time.time()*1000)})+'\n')
+    except: pass
+    # #endregion
+    
+    unit = db.query(Unit).filter(Unit.unit_id == owner.unit_id).first()
+    if unit:
+        try:
+            # #region agent log
+            try:
+                with open(log_path, 'a', encoding='utf-8') as f:
+                    f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:342","message":"calling update_unit_status","data":{"unit_id":str(unit.unit_id),"building_id":str(unit.building_id)},"timestamp":int(time.time()*1000)})+'\n')
+            except: pass
+            # #endregion
+            
+            updated_status = update_unit_status(str(unit.unit_id), db)
+            
+            # #region agent log
+            try:
+                with open(log_path, 'a', encoding='utf-8') as f:
+                    f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:347","message":"unit status updated","data":{"unit_id":str(unit.unit_id),"updated_status":updated_status},"timestamp":int(time.time()*1000)})+'\n')
+            except: pass
+            # #endregion
+            
+            # #region agent log
+            try:
+                with open(log_path, 'a', encoding='utf-8') as f:
+                    f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:350","message":"calling calculate_building_majority","data":{"building_id":str(unit.building_id)},"timestamp":int(time.time()*1000)})+'\n')
+            except: pass
+            # #endregion
+            
+            building_result = calculate_building_majority(str(unit.building_id), db)
+            
+            # #region agent log
+            try:
+                with open(log_path, 'a', encoding='utf-8') as f:
+                    f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:355","message":"building majority calculated","data":{"building_id":str(unit.building_id),"signature_percentage":building_result.get("signature_percentage"),"units_signed":building_result.get("units_signed")},"timestamp":int(time.time()*1000)})+'\n')
+            except: pass
+            # #endregion
+            
+            building = db.query(Building).filter(Building.building_id == unit.building_id).first()
+            if building:
+                # #region agent log
+                try:
+                    with open(log_path, 'a', encoding='utf-8') as f:
+                        f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:361","message":"calling calculate_project_majority","data":{"project_id":str(building.project_id)},"timestamp":int(time.time()*1000)})+'\n')
+                except: pass
+                # #endregion
+                
+                project_result = calculate_project_majority(str(building.project_id), db)
+                
+                # #region agent log
+                try:
+                    with open(log_path, 'a', encoding='utf-8') as f:
+                        f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:366","message":"project majority calculated","data":{"project_id":str(building.project_id),"signature_percentage":project_result.get("signature_percentage"),"units_signed":project_result.get("units_signed")},"timestamp":int(time.time()*1000)})+'\n')
+                except: pass
+                # #endregion
+        except Exception as e:
+            # #region agent log
+            try:
+                import traceback
+                with open(log_path, 'a', encoding='utf-8') as f:
+                    f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"tasks.py:372","message":"cascade recalculation error","data":{"error":str(e),"traceback":traceback.format_exc()},"timestamp":int(time.time()*1000)})+'\n')
+            except: pass
+            # #endregion
+            logger.error(f"Failed to recalculate progress after signature approval: {e}")
+            # Don't fail the request, just log
+    
+    logger.info(
+        "Signature approved via task",
+        extra={
+            "task_id": str(task_id),
+            "owner_id": str(task.owner_id),
+            "approved_by": str(current_user.user_id),
+        }
+    )
+    
+    return SignatureApprovalResponse(
+        task_id=str(task_id),
+        owner_id=str(task.owner_id),
+        owner_status="SIGNED",
+        message=f"Owner signature approved. Status updated to SIGNED."
     )
 

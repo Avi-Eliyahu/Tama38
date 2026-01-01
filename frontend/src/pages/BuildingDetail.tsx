@@ -278,13 +278,17 @@ export default function BuildingDetail() {
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="text-sm font-medium text-gray-600 mb-1">
-            {t('buildings.status')}
+            {t('buildings.assignedAgent')}
           </div>
           <div className="text-lg font-semibold text-gray-900">
-            {building.current_status.replace('_', ' ')}
+            {building.assigned_agent_id ? (
+              <span className="text-sm text-gray-600">{t('buildings.assigned')}</span>
+            ) : (
+              <span className="text-sm text-gray-400">{t('buildings.unassigned')}</span>
+            )}
           </div>
           <div className="text-sm text-gray-500 mt-1">
-            {t('buildings.lastUpdated')}
+            {building.assigned_agent_id ? building.assigned_agent_id : t('buildings.noAgentAssigned')}
           </div>
         </div>
       </div>

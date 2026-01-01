@@ -22,7 +22,9 @@
     "no": "No",
     "clear": "Clear",
     "all": "All",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "updating": "Updating...",
+    "optional": "Optional"
   },
   "auth": {
     "login": "Login",
@@ -129,7 +131,11 @@
     "interactionsTabDescription": "Building interactions will be displayed here",
     "tasksTabComingSoon": "Tasks tab coming soon",
     "tasksTabDescription": "Building tasks will be displayed here",
-    "createThroughWizard": "Create buildings through the project wizard"
+    "createThroughWizard": "Create buildings through the project wizard",
+    "assignedAgent": "Assigned Agent",
+    "unassigned": "Unassigned",
+    "assigned": "Assigned",
+    "noAgentAssigned": "No agent assigned"
   },
   "owners": {
     "title": "Owners",
@@ -151,7 +157,28 @@
     "tryDifferentSearch": "Try a different search query",
     "willAppear": "Owners will appear here once added through the project wizard or manually.",
     "searchPlaceholder": "Search by name, phone, or email...",
-    "loadingOwners": "Loading owners..."
+    "loadingOwners": "Loading owners...",
+    "changeStatus": "Change Owner Status",
+    "currentStatus": "Current Status",
+    "newStatus": "New Status",
+    "updateStatus": "Update Status",
+    "statusChangeNotes": "Add notes about this status change (optional)",
+    "notes": "Notes",
+    "pendingApproval": "Pending Approval",
+    "waitingForManagerApproval": "Waiting for manager approval",
+    "approvalTaskWillBeCreated": "An approval task will be created for managers to review and approve this signature request.",
+    "invalidStatusForAgent": "Agents can only set workflow statuses (NOT_CONTACTED, NEGOTIATING, AGREED_TO_SIGN, WAIT_FOR_SIGN)"
+  },
+  "ownerStatuses": {
+    "NOT_CONTACTED": "Not Contacted",
+    "PENDING_SIGNATURE": "Pending Signature",
+    "NEGOTIATING": "Negotiating",
+    "AGREED_TO_SIGN": "Agreed to Sign",
+    "WAIT_FOR_SIGN": "Wait for Sign",
+    "SIGNED": "Signed",
+    "REFUSED": "Refused",
+    "DECEASED": "Deceased",
+    "INCAPACITATED": "Incapacitated"
   },
   "interactions": {
     "title": "Interactions",
@@ -203,7 +230,12 @@
     "noTasks": "No tasks found",
     "noOverdueTasks": "No overdue tasks",
     "allUpToDate": "Great! All tasks are up to date.",
-    "willAppear": "Tasks will appear here once assigned."
+    "willAppear": "Tasks will appear here once assigned.",
+    "approveSignature": "Approve Signature",
+    "approvingSignature": "Approving Signature...",
+    "signatureApproved": "Signature approved successfully",
+    "managerReview": "Manager Review",
+    "approvalTask": "Approval Task"
   },
   "approvals": {
     "title": "Approvals",

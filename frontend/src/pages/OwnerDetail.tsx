@@ -10,6 +10,7 @@ import { tasksService, Task } from '../services/tasks';
 import { documentsService, Document } from '../services/documents';
 import { approvalsService, Signature } from '../services/approvals';
 import Breadcrumbs, { BreadcrumbItem } from '../components/Breadcrumbs';
+import OwnerStatusChange from '../components/OwnerStatusChange';
 
 interface OwnerUnit {
   unit_id: string;
@@ -293,6 +294,15 @@ export default function OwnerDetail() {
           )}
         </div>
       </div>
+
+      {/* Status Change Section */}
+      <OwnerStatusChange 
+        owner={owner} 
+        onStatusChange={(newStatus) => {
+          setOwner({ ...owner, owner_status: newStatus });
+          loadOwnerData();
+        }} 
+      />
 
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">

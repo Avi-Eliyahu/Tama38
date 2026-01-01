@@ -84,6 +84,24 @@ class OwnersService {
   async deleteOwner(ownerId: string): Promise<void> {
     await apiClient.delete(`/owners/${ownerId}`);
   }
+
+  async updateOwnerStatus(ownerId: string, ownerStatus: string, notes?: string): Promise<{
+    owner_id: string;
+    owner_status: string;
+    approval_task_id?: string;
+    message: string;
+  }> {
+    const response = await apiClient.put<{
+      owner_id: string;
+      owner_status: string;
+      approval_task_id?: string;
+      message: string;
+    }>(`/owners/${ownerId}/status`, {
+      owner_status: ownerStatus,
+      notes,
+    });
+    return response.data;
+  }
 }
 
 export const ownersService = new OwnersService();

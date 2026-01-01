@@ -82,7 +82,24 @@ class TasksService {
   }
 
   async completeTask(taskId: string): Promise<Task> {
-    const response = await apiClient.post<Task>(`/tasks/${taskId}/complete`);
+    const response = await apiClient.put<Task>(`/tasks/${taskId}/complete`);
+    return response.data;
+  }
+
+  async approveSignature(taskId: string, notes?: string): Promise<{
+    task_id: string;
+    owner_id: string;
+    owner_status: string;
+    message: string;
+  }> {
+    const response = await apiClient.post<{
+      task_id: string;
+      owner_id: string;
+      owner_status: string;
+      message: string;
+    }>(`/tasks/${taskId}/approve-signature`, {
+      notes,
+    });
     return response.data;
   }
 
