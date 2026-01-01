@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת התחדשות עירונית תמ״א 38 - מבנה ממשק</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Alef:wght@400;700&family=Assistant:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #218090;
+            --primary-light: #32B8C6;
+            --primary-dark: #1a6370;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --neutral: #6B7280;
+            --bg-light: #F9FAFB;
+            --bg-white: #FFFFFF;
+            --border: #E5E7EB;
+            --text-dark: #1F2937;
+            --text-light: #6B7280;
+            --traffic-green: #10B981;
+            --traffic-yellow: #F59E0B;
+            --traffic-red: #EF4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .app-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 12px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dark);
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-light);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background-color: var(--bg-light);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            font-weight: 500;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* TOP NAV */
+        .top-nav {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-box {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            width: 200px;
+            font-size: 14px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .user-menu:hover {
+            background-color: var(--bg-light);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* CONTENT AREA */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        /* SCREENS */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* KPI CARDS */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: var(--primary);
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: var(--text-light);
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .kpi-change {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* TRAFFIC LIGHT STATUS */
+        .traffic-light-grid {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .traffic-light-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .traffic-lights {
+            display: flex;
+            gap: 20px;
+            justify-content: space-around;
+        }
+
+        .traffic-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .light {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .light.green {
+            background: var(--traffic-green);
+        }
+
+        .light.yellow {
+            background: var(--traffic-yellow);
+        }
+
+        .light.red {
+            background: var(--traffic-red);
+        }
+
+        .light-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .light-count {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* BUILDING LIST TABLE */
+        .data-table {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .table-header {
+            background: var(--bg-light);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+            gap: 16px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-row {
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+            gap: 16px;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .table-row:hover {
+            background-color: var(--bg-light);
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .building-name {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .building-address {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-green {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--traffic-green);
+        }
+
+        .status-yellow {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--traffic-yellow);
+        }
+
+        .status-red {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--traffic-red);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-light);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        /* DETAIL TABS */
+        .tabs {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            padding: 16px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* INTERACTION LOG */
+        .interaction-list {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .interaction-item {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .interaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .interaction-left {
+            flex: 1;
+        }
+
+        .interaction-date {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .interaction-type {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .interaction-details {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .sentiment-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .sentiment-positive {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .sentiment-neutral {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--text-light);
+        }
+
+        .sentiment-negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--traffic-red);
+        }
+
+        /* FORM ELEMENTS */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(33, 128, 144, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: white;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* SCREEN SWITCHER */
+        .screen-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .screen-switcher-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-light);
+            display: block;
+        }
+
+        .screen-switcher select {
+            width: 180px;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .table-header, .table-row {
+                grid-template-columns: 2fr 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                padding: 8px;
+            }
+
+            .nav-section {
+                margin-bottom: 0;
+                display: flex;
+                gap: 8px;
+            }
+
+            .nav-item {
+                padding: 8px 12px;
+                white-space: nowrap;
+            }
+
+            .content-area {
+                padding: 16px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .traffic-lights {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+
+        /* CHART PLACEHOLDER */
+        .chart-placeholder {
+            background: linear-gradient(135deg, var(--bg-light) 0%, rgba(33, 128, 144, 0.05) 100%);
+            height: 300px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        /* UTILITY */
+        .flex {
+            display: flex;
+        }
+
+        .gap-16 {
+            gap: 16px;
+        }
+
+        .mb-24 {
+            margin-bottom: 24px;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+    
+        /* RTL Support */
+        html[dir="rtl"], body {
+            direction: rtl;
+            text-align: right;
+            font-family: "Assistant", "Alef", "Rubik", Arial, sans-serif;
+        }
+
+        .sidebar {
+            border-left: none;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .main {
+            margin-right: 260px;
+            margin-left: 0;
+        }
+
+        .nav-item {
+            padding-right: 16px;
+            padding-left: 8px;
+        }
+
+        .nav-icon {
+            margin-left: 12px;
+            margin-right: 0;
+        }
+
+        .breadcrumbs li:not(:last-child)::after {
+            margin-right: 0;
+            margin-left: 8px;
+        }
+
+        .btn-icon {
+            margin-right: 8px;
+            margin-left: 0;
+        }
+
+        .badge {
+            margin-right: 0;
+            margin-left: 8px;
+        }
+
+        th, td {
+            text-align: right;
+        }
+
+        .progress-bar {
+            direction: ltr;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">38</div>
+                <div class="app-title">תמ״א 38</div>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <div class="nav-item active" onclick="switchScreen('dashboard')">
+                        <div class="nav-icon">📊</div>
+                        <div>לוח בקרה</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">פרויקטים</div>
+                    <div class="nav-item" onclick="switchScreen('projects')">
+                        <div class="nav-icon">📁</div>
+                        <div>פרויקטים</div>
+                    </div>
+                    <div class="nav-item" onclick="switchScreen('buildings')">
+                        <div class="nav-icon">🏢</div>
+                        <div>בניינים</div>
+                    </div>
+                    <div class="nav-item" onclick="switchScreen('units')">
+                        <div class="nav-icon">🏠</div>
+                        <div>יחידות</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">CRM</div>
+                    <div class="nav-item" onclick="switchScreen('owners')">
+                        <div class="nav-icon">👥</div>
+                        <div>בעלי דירות</div>
+                    </div>
+                    <div class="nav-item" onclick="switchScreen('interactions')">
+                        <div class="nav-icon">💬</div>
+                        <div>אינטראקציות</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Operations</div>
+                    <div class="nav-item" onclick="switchScreen('tasks')">
+                        <div class="nav-icon">✓</div>
+                        <div>משימות</div>
+                    </div>
+                    <div class="nav-item" onclick="switchScreen('communications')">
+                        <div class="nav-icon">✉️</div>
+                        <div>תקשורת</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Financial</div>
+                    <div class="nav-item" onclick="switchScreen('incentives')">
+                        <div class="nav-icon">💰</div>
+                        <div>Incentives</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Reports</div>
+                    <div class="nav-item" onclick="switchScreen('reports')">
+                        <div class="nav-icon">📈</div>
+                        <div>Analytics</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOP NAVIGATION -->
+            <div class="top-nav">
+                <div class="nav-left">
+                    <div class="breadcrumb">
+                        <span>תמ״א 38</span>
+                        <span>/</span>
+                        <span id="breadcrumb-current">לוח בקרה</span>
+                    </div>
+                </div>
+                <div class="nav-right">
+                    <input type="text" class="search-box" placeholder="Search projects, buildings...">
+                    <div class="user-menu">
+                        <div class="user-avatar">DM</div>
+                        <div style="font-size: 13px;">
+                            <div style="font-weight: 600;">David Moran</div>
+                            <div style="color: var(--text-light); font-size: 11px;">פרויקט מנהל</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENT AREA -->
+            <div class="content-area">
+
+                <!-- DASHBOARD SCREEN -->
+                <div id="dashboard" class="screen active">
+                    <div class="page-header">
+                        <h1 class="page-title">לוח בקרה</h1>
+                        <p class="page-subtitle">ברוך שובך! להלן סקירת פרויקטי תמ״א 38 שלך.</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Active פרויקטים</div>
+                            <div class="kpi-value">12</div>
+                            <div class="kpi-change">↑ 2 חדשים החודש</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total בניינים</div>
+                            <div class="kpi-value">248</div>
+                            <div class="kpi-change">↑ 8% שיעור חתימות</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">אחוז חתימות כללי</div>
+                            <div class="kpi-value">67%</div>
+                            <div class="kpi-change">יעד: 75% (יעד נדרש)</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total בעלי דירות</div>
+                            <div class="kpi-value">1,842</div>
+                            <div class="kpi-change">568 חתמו החודש</div>
+                        </div>
+                    </div>
+
+                    <div class="traffic-light-grid">
+                        <div class="traffic-light-title">סקירת סטטוס בניינים</div>
+                        <div class="traffic-lights">
+                            <div class="traffic-item">
+                                <div class="light green">82</div>
+                                <div class="light-label">ירוק</div>
+                                <div class="light-count">≥75% חתימות</div>
+                            </div>
+                            <div class="traffic-item">
+                                <div class="light yellow">104</div>
+                                <div class="light-label">צהוב</div>
+                                <div class="light-count">50-75% חתימות</div>
+                            </div>
+                            <div class="traffic-item">
+                                <div class="light red">62</div>
+                                <div class="light-label">אדום</div>
+                                <div class="light-count">&lt;50% חתימות</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>בניינים מובילים לפי עדיפות</div>
+                            <div>אחוז חתימות</div>
+                            <div>יחידות</div>
+                            <div>פעילות אחרונה</div>
+                            <div>סטטוס</div>
+                        </div>
+                        <div class="table-row" onclick="switchScreen('building-detail')">
+                            <div>
+                                <div class="building-name">Bldg-001 | 123 King Street</div>
+                                <div class="building-address">ירושלים, מרכז העיר District</div>
+                            </div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 85%"></div></div>85%</div>
+                            <div>24 יחידות</div>
+                            <div style="font-size: 13px; color: var(--text-light);">היום 2:45 PM</div>
+                            <div><span class="status-badge status-green">ירוק</span></div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Bldg-002 | 456 Ben Yehuda Ave</div>
+                                <div class="building-address">ירושלים, מרכז העיר District</div>
+                            </div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 68%"></div></div>68%</div>
+                            <div>18 יחידות</div>
+                            <div style="font-size: 13px; color: var(--text-light);">אתמול 3:20 PM</div>
+                            <div><span class="status-badge status-yellow">צהוב</span></div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Bldg-003 | 789 Herzl Street</div>
+                                <div class="building-address">ירושלים, המושבה הגרמנית</div>
+                            </div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 42%"></div></div>42%</div>
+                            <div>32 יחידות</div>
+                            <div style="font-size: 13px; color: var(--text-light);">3 ימים</div>
+                            <div><span class="status-badge status-red">אדום</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-20">
+                        <h3 style="margin-bottom: 16px;">אינטראקציות אחרונות (24 שעות)</h3>
+                        <div class="interaction-list">
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">היום 2:45 PM</div>
+                                    <div class="interaction-type">שיחת טלפון - David Moran</div>
+                                    <div class="interaction-details">בעל דירה: Yael Kohen | Building: Bldg-001 | Unit 304</div>
+                                    <span class="sentiment-badge sentiment-positive">חיובי</span>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">מעקב: מחר</div>
+                            </div>
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">היום 10:30 AM</div>
+                                    <div class="interaction-type">פגישה פנים-אל-פנים - Sarah Goldman</div>
+                                    <div class="interaction-details">בעל דירה: Moshe Levi | Building: Bldg-002 | Unit 201</div>
+                                    <span class="sentiment-badge sentiment-neutral">ניטרלי</span>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">מעקב: 3 days</div>
+                            </div>
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">אתמול 4:15 PM</div>
+                                    <div class="interaction-type">הודעת WhatsApp - David Moran</div>
+                                    <div class="interaction-details">בעל דירה: Ruth Cohen | Building: Bldg-001 | Unit 108</div>
+                                    <span class="sentiment-badge sentiment-negative">הועבר לטיפול</span>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">מעקב דחוף</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUILDING DETAIL SCREEN -->
+                <div id="building-detail" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Bldg-001 | 123 King Street</h1>
+                        <p class="page-subtitle">ירושלים, מרכז העיר District | Project: Urban Renewal 2024</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">שיעור חתימות</div>
+                            <div class="kpi-value">85%</div>
+                            <div class="kpi-change">20 of 24 בעלים</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total יחידות</div>
+                            <div class="kpi-value">24</div>
+                            <div class="kpi-change">כולם מזוהים במלואם</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">רמזור</div>
+                            <div class="kpi-value" style="color: var(--traffic-green);">🟢</div>
+                            <div class="kpi-change">התקדמות מצוינת</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">פעילות אחרונה</div>
+                            <div class="kpi-value" style="font-size: 16px;">היום</div>
+                            <div class="kpi-change">2:45 PM by David Moran</div>
+                        </div>
+                    </div>
+
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab('units-tab', this)">יחידות (24)</div>
+                        <div class="tab" onclick="switchTab('owners-tab', this)">בעלי דירות (28)</div>
+                        <div class="tab" onclick="switchTab('interactions-tab', this)">אינטראקציות (156)</div>
+                        <div class="tab" onclick="switchTab('tasks-tab', this)">משימות (3)</div>
+                        <div class="tab" onclick="switchTab('comms-tab', this)">תקשורת (42)</div>
+                    </div>
+
+                    <!-- Units Tab -->
+                    <div id="units-tab" class="tab-content">
+                        <div class="data-table">
+                            <div class="table-header">
+                                <div>דירה</div>
+                                <div>שטח (m²)</div>
+                                <div>בעלי דירות</div>
+                                <div>אחוז חתימות</div>
+                                <div>סטטוס</div>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <div class="building-name">דירה 101</div>
+                                    <div class="building-address">קומה 1 | 65 m²</div>
+                                </div>
+                                <div>65</div>
+                                <div>1</div>
+                                <div><div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>100%</div>
+                                <div><span class="status-badge status-green">נחתם</span></div>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <div class="building-name">דירה 102</div>
+                                    <div class="building-address">קומה 1 | 70 m²</div>
+                                </div>
+                                <div>70</div>
+                                <div>2</div>
+                                <div><div class="progress-bar"><div class="progress-fill" style="width: 50%"></div></div>50%</div>
+                                <div><span class="status-badge status-yellow">ממתין</span></div>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <div class="building-name">דירה 103</div>
+                                    <div class="building-address">קומה 1 | 75 m²</div>
+                                </div>
+                                <div>75</div>
+                                <div>1</div>
+                                <div><div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>100%</div>
+                                <div><span class="status-badge status-green">נחתם</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Owners Tab -->
+                    <div id="owners-tab" class="tab-content" style="display: none;">
+                        <div class="data-table">
+                            <div class="table-header">
+                                <div>Owner Name</div>
+                                <div>יחידות</div>
+                                <div>Share %</div>
+                                <div>סטטוס</div>
+                                <div>Last Contact</div>
+                            </div>
+                            <div class="table-row" onclick="switchScreen('owner-detail')">
+                                <div>
+                                    <div class="building-name">Yael Kohen</div>
+                                    <div class="building-address">ת.ז: 123456789</div>
+                                </div>
+                                <div>דירה 304</div>
+                                <div>100%</div>
+                                <div><span class="status-badge status-green">נחתם</span></div>
+                                <div style="font-size: 13px; color: var(--text-light);">היום 2:45 PM</div>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <div class="building-name">Moshe Levi</div>
+                                    <div class="building-address">ת.ז: 987654321</div>
+                                </div>
+                                <div>דירה 201, 202</div>
+                                <div>50% each</div>
+                                <div><span class="status-badge status-yellow">במשא-ומתן</span></div>
+                                <div style="font-size: 13px; color: var(--text-light);">היום 10:30 AM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactions Tab -->
+                    <div id="interactions-tab" class="tab-content" style="display: none;">
+                        <div class="interaction-list">
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">היום 2:45 PM</div>
+                                    <div class="interaction-type">שיחת טלפון - Yael Kohen</div>
+                                    <div class="interaction-details">Agent: David Moran | Unit: 304 | Duration: 8 דק׳</div>
+                                    <span class="sentiment-badge sentiment-positive">חיובי</span>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">מעקב: מחר</div>
+                            </div>
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">היום 10:30 AM</div>
+                                    <div class="interaction-type">פגישה פנים-אל-פנים - Moshe Levi</div>
+                                    <div class="interaction-details">Agent: Sarah Goldman | Units: 201, 202 | Duration: 25 דק׳</div>
+                                    <span class="sentiment-badge sentiment-neutral">ניטרלי</span>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">מעקב: 3 days</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Tab -->
+                    <div id="tasks-tab" class="tab-content" style="display: none;">
+                        <div class="interaction-list">
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">למשלוח: מחר</div>
+                                    <div class="interaction-type">קביעת פגישה - Moshe Levi</div>
+                                    <div class="interaction-details">הוקצה ל: Sarah Goldman | Units: 201, 202</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="status-badge status-yellow">פתוח</span>
+                                </div>
+                            </div>
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">למשלוח: In 3 days</div>
+                                    <div class="interaction-type">שיחת מעקב - Unit 102 Owner</div>
+                                    <div class="interaction-details">הוקצה ל: David Moran | Units: 102</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="status-badge status-yellow">פתוח</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Communications Tab -->
+                    <div id="comms-tab" class="tab-content" style="display: none;">
+                        <div class="interaction-list">
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">היום 9:00 AM</div>
+                                    <div class="interaction-type">דואר אלקטרוני - הודעה לבניין</div>
+                                    <div class="interaction-details">אל: All Owners | Template: Project_Update_HE | Status: Delivered (24 of 28 opened)</div>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">
+                                    <div>85% שיעור פתיחה</div>
+                                    <div>12 clicks</div>
+                                </div>
+                            </div>
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">אתמול 5:30 PM</div>
+                                    <div class="interaction-type">הודעת WhatsApp - Reminder</div>
+                                    <div class="interaction-details">אל: Unit 102, 103 Owners | Template: Meeting_Reminder | Status: נמסר</div>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">
+                                    <div>נמסר: 2/2</div>
+                                    <div>Read: 2/2</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OWNER DETAIL SCREEN -->
+                <div id="owner-detail" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Yael Kohen</h1>
+                        <p class="page-subtitle">ת.ז: 123456789 | Building: Bldg-001 | Unit: 304</p>
+                    </div>
+
+                    <div class="flex gap-16 mb-24">
+                        <div style="flex: 1;">
+                            <div class="data-table">
+                                <div class="table-header">
+                                    <div>פרטי קשר</div>
+                                </div>
+                                <div style="padding: 20px;">
+                                    <div style="margin-bottom: 12px;"><strong>טלפון:</strong> +972-2-123-4567</div>
+                                    <div style="margin-bottom: 12px;"><strong>דואר אלקטרוני:</strong> yael.kohen@email.com</div>
+                                    <div style="margin-bottom: 12px;"><strong>דרך קשר מועדפת:</strong> WhatsApp</div>
+                                    <div style="margin-bottom: 12px;"><strong>שפה:</strong> עברית</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="flex: 1;">
+                            <div class="data-table">
+                                <div class="table-header">
+                                    <div>תמ״א 38 סטטוס</div>
+                                </div>
+                                <div style="padding: 20px;">
+                                    <div style="margin-bottom: 12px;"><strong>סטטוס חתימה:</strong> <span class="status-badge status-green">נחתם</span></div>
+                                    <div style="margin-bottom: 12px;"><strong>תאריך חתימה:</strong> 15 Dec 2024</div>
+                                    <div style="margin-bottom: 12px;"><strong>חלק בבעלות:</strong> 100%</div>
+                                    <div style="margin-bottom: 12px;"><strong>קשר אחרון:</strong> Today 2:45 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-bottom: 16px;">היסטוריית אינטראקציות</h3>
+                    <div class="interaction-list">
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">היום 2:45 PM</div>
+                                <div class="interaction-type">שיחת טלפון - David Moran</div>
+                                <div class="interaction-details">משך: 8 minutes | Outcome: הסכים לחתום</div>
+                                <span class="sentiment-badge sentiment-positive">חיובי</span>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">2 days ago - 3:00 PM</div>
+                                <div class="interaction-type">הודעת WhatsApp - David Moran</div>
+                                <div class="interaction-details">הודעת אישור פגישה נשלחה</div>
+                                <span class="sentiment-badge sentiment-positive">חיובי</span>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">5 days ago - 10:00 AM</div>
+                                <div class="interaction-type">פגישה פנים-אל-פנים - David Moran</div>
+                                <div class="interaction-details">משך: 45 minutes | נדונו פרטי הפרויקט והתמריצים</div>
+                                <span class="sentiment-badge sentiment-positive">חיובי</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROJECTS SCREEN -->
+                <div id="projects" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">פרויקטים</h1>
+                        <p class="page-subtitle">כל פרויקטי ההתחדשות העירונית תמ״א 38 הפעילים</p>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ New פרויקט</button>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>פרויקט</div>
+                            <div>בניינים</div>
+                            <div>אחוז חתימות</div>
+                            <div>סטטוס</div>
+                            <div>מנהל</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">התחדשות עירונית 2024 - ירושלים</div>
+                                <div class="building-address">מרכז העיר, המושבה הגרמנית, רחביה</div>
+                            </div>
+                            <div>248</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 67%"></div></div>67%</div>
+                            <div><span class="status-badge status-yellow">פעיל</span></div>
+                            <div style="font-size: 13px;">David Moran</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">התחדשות עירונית שלב 2 - תל אביב</div>
+                                <div class="building-address">כיכר רבין, פלורנטין, המרכז</div>
+                            </div>
+                            <div>156</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 82%"></div></div>82%</div>
+                            <div><span class="status-badge status-green">פעיל</span></div>
+                            <div style="font-size: 13px;">Rivka Brenner</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUILDINGS SCREEN -->
+                <div id="buildings" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">בניינים</h1>
+                        <p class="page-subtitle">רשימה מלאה של כל הבניינים בפרויקטים</p>
+                    </div>
+
+                    <div style="margin-bottom: 16px; display: flex; gap: 12px;">
+                        <input type="text" class="search-box" placeholder="Search buildings...">
+                        <button class="btn btn-secondary">Filter</button>
+                        <button class="btn btn-primary">+ Add Building</button>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>Building</div>
+                            <div>פרויקט</div>
+                            <div>אחוז חתימות</div>
+                            <div>סטטוס</div>
+                            <div>נציג</div>
+                        </div>
+                        <div class="table-row" onclick="switchScreen('building-detail')">
+                            <div>
+                                <div class="building-name">Bldg-001 | 123 King Street</div>
+                                <div class="building-address">ירושלים, מרכז העיר</div>
+                            </div>
+                            <div>Urban Renewal 2024</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 85%"></div></div>85%</div>
+                            <div><span class="status-badge status-green">ירוק</span></div>
+                            <div style="font-size: 13px;">David Moran</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Bldg-002 | 456 Ben Yehuda Ave</div>
+                                <div class="building-address">ירושלים, מרכז העיר</div>
+                            </div>
+                            <div>Urban Renewal 2024</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 68%"></div></div>68%</div>
+                            <div><span class="status-badge status-yellow">צהוב</span></div>
+                            <div style="font-size: 13px;">Sarah Goldman</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Bldg-003 | 789 Herzl Street</div>
+                                <div class="building-address">ירושלים, המושבה הגרמנית</div>
+                            </div>
+                            <div>Urban Renewal 2024</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 42%"></div></div>42%</div>
+                            <div><span class="status-badge status-red">אדום</span></div>
+                            <div style="font-size: 13px;">Moshe Barkai</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UNITS SCREEN -->
+                <div id="units" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">יחידות</h1>
+                        <p class="page-subtitle">כל היחידות המגורים במערכת</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total יחידות</div>
+                            <div class="kpi-value">5,248</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">נחתם במלואו</div>
+                            <div class="kpi-value">3,516</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">ממתין</div>
+                            <div class="kpi-value">1,284</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">סירוב</div>
+                            <div class="kpi-value">448</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ New דירה</button>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>דירה</div>
+                            <div>Building</div>
+                            <div>בעלי דירות</div>
+                            <div>אחוז חתימות</div>
+                            <div>סטטוס</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">דירה 304</div>
+                                <div class="building-address">Bldg-001 | Floor 3</div>
+                            </div>
+                            <div>Bldg-001</div>
+                            <div>1</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>100%</div>
+                            <div><span class="status-badge status-green">נחתם</span></div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">דירה 201</div>
+                                <div class="building-address">Bldg-002 | Floor 2</div>
+                            </div>
+                            <div>Bldg-002</div>
+                            <div>2</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 50%"></div></div>50%</div>
+                            <div><span class="status-badge status-yellow">ממתין</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OWNERS SCREEN -->
+                <div id="owners" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">בעלי דירות</h1>
+                        <p class="page-subtitle">ניהול כל בעלי הנכסים במערכת</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total בעלי דירות</div>
+                            <div class="kpi-value">1,842</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">נחתם</div>
+                            <div class="kpi-value">1,274</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">ממתין</div>
+                            <div class="kpi-value">568</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ New Owner</button>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>Owner</div>
+                            <div>יחידות</div>
+                            <div>סטטוס</div>
+                            <div>Last Contact</div>
+                            <div>פעולה</div>
+                        </div>
+                        <div class="table-row" onclick="switchScreen('owner-detail')">
+                            <div>
+                                <div class="building-name">Yael Kohen</div>
+                                <div class="building-address">ת.ז: 123456789</div>
+                            </div>
+                            <div>Bldg-001 Unit 304</div>
+                            <div><span class="status-badge status-green">נחתם</span></div>
+                            <div style="font-size: 13px;">היום 2:45 PM</div>
+                            <div><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">View</button></div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Moshe Levi</div>
+                                <div class="building-address">ת.ז: 987654321</div>
+                            </div>
+                            <div>Bldg-002 Unit 201, 202</div>
+                            <div><span class="status-badge status-yellow">במשא-ומתן</span></div>
+                            <div style="font-size: 13px;">היום 10:30 AM</div>
+                            <div><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">View</button></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INTERACTIONS SCREEN -->
+                <div id="interactions" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">אינטראקציות</h1>
+                        <p class="page-subtitle">יומן ביקורת מלא של כל האינטראקציות עם הבעלים</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">החודש</div>
+                            <div class="kpi-value">2,456</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">השבוע</div>
+                            <div class="kpi-value">486</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">היום</div>
+                            <div class="kpi-value">124</div>
+                        </div>
+                    </div>
+
+                    <div class="interaction-list">
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">היום 2:45 PM</div>
+                                <div class="interaction-type">שיחת טלפון - David Moran → Yael Kohen</div>
+                                <div class="interaction-details">בניין: Bldg-001 | Unit: 304 | Duration: 8 min | Outcome: הסכים לחתום</div>
+                                <span class="sentiment-badge sentiment-positive">חיובי</span>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">היום 10:30 AM</div>
+                                <div class="interaction-type">פגישה פנים-אל-פנים - Sarah Goldman → Moshe Levi</div>
+                                <div class="interaction-details">בניין: Bldg-002 | Units: 201, 202 | Duration: 25 min | Outcome: לא בטוח</div>
+                                <span class="sentiment-badge sentiment-neutral">ניטרלי</span>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">אתמול 4:15 PM</div>
+                                <div class="interaction-type">הודעת WhatsApp - David Moran → Ruth Cohen</div>
+                                <div class="interaction-details">בניין: Bldg-001 | Unit: 108 | Status: Delivered & Read | Escalation: כן</div>
+                                <span class="sentiment-badge sentiment-negative">הועבר לטיפול</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASKS SCREEN -->
+                <div id="tasks" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">משימות</h1>
+                        <p class="page-subtitle">ניהול מעקבים ופעולות</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Open משימות</div>
+                            <div class="kpi-value">42</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">באיחור</div>
+                            <div class="kpi-value">5</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Due היום</div>
+                            <div class="kpi-value">8</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ New Task</button>
+                    </div>
+
+                    <div class="interaction-list">
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">למשלוח: מחר</div>
+                                <div class="interaction-type">קביעת פגישה - Moshe Levi</div>
+                                <div class="interaction-details">הוקצה ל: Sarah Goldman | Building: Bldg-002</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="status-badge status-yellow">פתוח</span>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">למשלוח: Today 5:00 PM</div>
+                                <div class="interaction-type">שיחת מעקב - Ruth Cohen</div>
+                                <div class="interaction-details">הוקצה ל: David Moran | Building: Bldg-001</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="status-badge status-red">דחוף</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMMUNICATIONS SCREEN -->
+                <div id="communications" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">תקשורת</h1>
+                        <p class="page-subtitle">יומני הודעות דואר אלקטרוני, SMS, WhatsApp</p>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ Send Message</button>
+                    </div>
+
+                    <div class="interaction-list">
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">היום 9:00 AM</div>
+                                <div class="interaction-type">דואר אלקטרוני - הודעה לבניין</div>
+                                <div class="interaction-details">אל: 28 owners | Template: Project_Update_HE | Delivered: 28/28 | Opened: 24/28</div>
+                            </div>
+                            <div style="text-align: right; font-size: 12px;">
+                                <div style="color: var(--traffic-green);">✓ נמסר</div>
+                                <div style="color: var(--text-light);">85% שיעור פתיחה</div>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">אתמול 5:30 PM</div>
+                                <div class="interaction-type">הודעת WhatsApp - תזכורת לפגישה</div>
+                                <div class="interaction-details">אל: 15 owners | Status: Delivered & Read 15/15</div>
+                            </div>
+                            <div style="text-align: right; font-size: 12px;">
+                                <div style="color: var(--traffic-green);">✓ נמסר</div>
+                                <div style="color: var(--text-light);">100% נקרא</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INCENTIVES SCREEN -->
+                <div id="incentives" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">תוכניות תמריצים</h1>
+                        <p class="page-subtitle">ניהול תוכניות תמריצים ותביעות</p>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ New תוכנית</button>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>תוכנית</div>
+                            <div>סוג</div>
+                            <div>תקציב</div>
+                            <div>נתבע</div>
+                            <div>סטטוס</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Tax Benefit תוכנית</div>
+                                <div class="building-address">לעמידה בדרישת חתימות</div>
+                            </div>
+                            <div>הפחתת מס</div>
+                            <div>₪ 500,000</div>
+                            <div>₪ 285,000</div>
+                            <div><span class="status-badge status-green">פעיל</span></div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Renovation Grant תוכנית</div>
+                                <div class="building-address">לשיפורים לאחר החתימה</div>
+                            </div>
+                            <div>מענק</div>
+                            <div>₪ 250,000</div>
+                            <div>₪ 180,000</div>
+                            <div><span class="status-badge status-green">פעיל</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTS SCREEN -->
+                <div id="reports" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Analytics & Reports</h1>
+                        <p class="page-subtitle">מדדי ביצועים ותובנות</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">שיעור הצלחה ממוצע</div>
+                            <div class="kpi-value">68%</div>
+                            <div class="kpi-change">כל הנציגים ביחד</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">משך שיחה ממוצע</div>
+                            <div class="kpi-value">12 דק׳</div>
+                            <div class="kpi-change">אינטראקציות טלפוניות</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">סנטימנט חיובי</div>
+                            <div class="kpi-value">72%</div>
+                            <div class="kpi-change">מכלל האינטראקציות</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Top נציג</div>
+                            <div class="kpi-value" style="font-size: 18px;">Rivka</div>
+                            <div class="kpi-change">82% שיעור הצלחה</div>
+                        </div>
+                    </div>
+
+                    <div class="data-table mb-24">
+                        <div class="table-header">
+                            <div>נציג</div>
+                            <div>אינטראקציות</div>
+                            <div>שיעור הצלחה</div>
+                            <div>משך ממוצע</div>
+                            <div>סנטימנט ממוצע</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Rivka Brenner</div>
+                            </div>
+                            <div>324</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 82%"></div></div>82%</div>
+                            <div>14 דק׳</div>
+                            <div style="color: var(--traffic-green); font-weight: 600;">+0.8</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">David Moran</div>
+                            </div>
+                            <div>298</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 78%"></div></div>78%</div>
+                            <div>13 דק׳</div>
+                            <div style="color: var(--traffic-green); font-weight: 600;">+0.7</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Sarah Goldman</div>
+                            </div>
+                            <div>276</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 72%"></div></div>72%</div>
+                            <div>12 דק׳</div>
+                            <div style="color: var(--text-light);">+0.6</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-bottom: 16px;">גרפים ומגמות</h3>
+                    <div class="chart-placeholder">
+                        📊 Interactive charts would display here: Success rate trends, signature progress by project, agent performance ranking, sentiment analysis, etc.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN SWITCHER -->
+    <div class="screen-switcher">
+        <label class="screen-switcher-label">ניווט מהיר</label>
+        <select onchange="switchScreen(this.value)">
+            <option value="">Select a screen...</option>
+            <option value="dashboard">לוח בקרה</option>
+            <option value="projects">פרויקטים</option>
+            <option value="buildings">בניינים</option>
+            <option value="building-detail">Building Detail</option>
+            <option value="units">יחידות</option>
+            <option value="owners">בעלי דירות</option>
+            <option value="owner-detail">Owner Detail</option>
+            <option value="interactions">אינטראקציות</option>
+            <option value="tasks">משימות</option>
+            <option value="communications">תקשורת</option>
+            <option value="incentives">תוכניות תמריצים</option>
+            <option value="reports">Analytics & Reports</option>
+        </select>
+    </div>
+
+    <script>
+        function switchScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+
+            // Show selected screen
+            const selectedScreen = document.getElementById(screenId);
+            if (selectedScreen) {
+                selectedScreen.classList.add('active');
+                
+                // Update breadcrumb
+                const screenNames = {
+                    'dashboard': 'Dashboard',
+                    'projects': 'Projects',
+                    'buildings': 'Buildings',
+                    'building-detail': 'Building Detail',
+                    'units': 'Units',
+                    'owners': 'Owners',
+                    'owner-detail': 'Owner Detail',
+                    'interactions': 'Interactions',
+                    'tasks': 'Tasks',
+                    'communications': 'Communications',
+                    'incentives': 'Incentive Programs',
+                    'reports': 'Analytics & Reports'
+                };
+                
+                document.getElementById('breadcrumb-current').textContent = screenNames[screenId] || 'Screen';
+                
+                // Update active nav item
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Scroll to top
+                document.querySelector('.content-area').scrollTop = 0;
+            }
+        }
+
+        function switchTab(tabId, tabElement) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+
+            // Show selected tab
+            const selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+            }
+
+            // Update active tab styling
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            tabElement.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAMA38 Urban Renewal System - UI Mockup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #218090;
+            --primary-light: #32B8C6;
+            --primary-dark: #1a6370;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --neutral: #6B7280;
+            --bg-light: #F9FAFB;
+            --bg-white: #FFFFFF;
+            --border: #E5E7EB;
+            --text-dark: #1F2937;
+            --text-light: #6B7280;
+            --traffic-green: #10B981;
+            --traffic-yellow: #F59E0B;
+            --traffic-red: #EF4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .app-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 12px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dark);
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-light);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background-color: var(--bg-light);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            font-weight: 500;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* TOP NAV */
+        .top-nav {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-box {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            width: 200px;
+            font-size: 14px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .user-menu:hover {
+            background-color: var(--bg-light);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* CONTENT AREA */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        /* SCREENS */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* KPI CARDS */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: var(--primary);
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: var(--text-light);
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .kpi-change {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* TRAFFIC LIGHT STATUS */
+        .traffic-light-grid {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .traffic-light-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .traffic-lights {
+            display: flex;
+            gap: 20px;
+            justify-content: space-around;
+        }
+
+        .traffic-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .light {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .light.green {
+            background: var(--traffic-green);
+        }
+
+        .light.yellow {
+            background: var(--traffic-yellow);
+        }
+
+        .light.red {
+            background: var(--traffic-red);
+        }
+
+        .light-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .light-count {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* BUILDING LIST TABLE */
+        .data-table {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .table-header {
+            background: var(--bg-light);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+            gap: 16px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-row {
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+            gap: 16px;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .table-row:hover {
+            background-color: var(--bg-light);
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .building-name {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .building-address {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-green {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--traffic-green);
+        }
+
+        .status-yellow {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--traffic-yellow);
+        }
+
+        .status-red {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--traffic-red);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-light);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        /* DETAIL TABS */
+        .tabs {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            padding: 16px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* INTERACTION LOG */
+        .interaction-list {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .interaction-item {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .interaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .interaction-left {
+            flex: 1;
+        }
+
+        .interaction-date {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .interaction-type {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .interaction-details {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .sentiment-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .sentiment-positive {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .sentiment-neutral {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--text-light);
+        }
+
+        .sentiment-negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--traffic-red);
+        }
+
+        /* FORM ELEMENTS */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(33, 128, 144, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: white;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* SCREEN SWITCHER */
+        .screen-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .screen-switcher-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-light);
+            display: block;
+        }
+
+        .screen-switcher select {
+            width: 180px;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .table-header, .table-row {
+                grid-template-columns: 2fr 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                padding: 8px;
+            }
+
+            .nav-section {
+                margin-bottom: 0;
+                display: flex;
+                gap: 8px;
+            }
+
+            .nav-item {
+                padding: 8px 12px;
+                white-space: nowrap;
+            }
+
+            .content-area {
+                padding: 16px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .traffic-lights {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+
+        /* CHART PLACEHOLDER */
+        .chart-placeholder {
+            background: linear-gradient(135deg, var(--bg-light) 0%, rgba(33, 128, 144, 0.05) 100%);
+            height: 300px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        /* UTILITY */
+        .flex {
+            display: flex;
+        }
+
+        .gap-16 {
+            gap: 16px;
+        }
+
+        .mb-24 {
+            margin-bottom: 24px;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">38</div>
+                <div class="app-title">TAMA38</div>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <div class="nav-item active" onclick="switchScreen('dashboard')">
+                        <div class="nav-icon">📊</div>
+                        <div>Dashboard</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Projects</div>
+                    <div class="nav-item" onclick="switchScreen('projects')">
+                        <div class="nav-icon">📁</div>
+                        <div>Projects</div>
+                    </div>
+                    <div class="nav-item" onclick="switchScreen('buildings')">
+                        <div class="nav-icon">🏢</div>
+                        <div>Buildings</div>
+                    </div>
+                    <div class="nav-item" onclick="switchScreen('units')">
+                        <div class="nav-icon">🏠</div>
+                        <div>Units</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">CRM</div>
+                    <div class="nav-item" onclick="switchScreen('owners')">
+                        <div class="nav-icon">👥</div>
+                        <div>Owners</div>
+                    </div>
+                    <div class="nav-item" onclick="switchScreen('interactions')">
+                        <div class="nav-icon">💬</div>
+                        <div>Interactions</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Operations</div>
+                    <div class="nav-item" onclick="switchScreen('tasks')">
+                        <div class="nav-icon">✓</div>
+                        <div>Tasks</div>
+                    </div>
+                    <div class="nav-item" onclick="switchScreen('communications')">
+                        <div class="nav-icon">✉️</div>
+                        <div>Communications</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Financial</div>
+                    <div class="nav-item" onclick="switchScreen('incentives')">
+                        <div class="nav-icon">💰</div>
+                        <div>Incentives</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Reports</div>
+                    <div class="nav-item" onclick="switchScreen('reports')">
+                        <div class="nav-icon">📈</div>
+                        <div>Analytics</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOP NAVIGATION -->
+            <div class="top-nav">
+                <div class="nav-left">
+                    <div class="breadcrumb">
+                        <span>TAMA38</span>
+                        <span>/</span>
+                        <span id="breadcrumb-current">Dashboard</span>
+                    </div>
+                </div>
+                <div class="nav-right">
+                    <input type="text" class="search-box" placeholder="Search projects, buildings...">
+                    <div class="user-menu">
+                        <div class="user-avatar">DM</div>
+                        <div style="font-size: 13px;">
+                            <div style="font-weight: 600;">David Moran</div>
+                            <div style="color: var(--text-light); font-size: 11px;">Project Manager</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENT AREA -->
+            <div class="content-area">
+
+                <!-- DASHBOARD SCREEN -->
+                <div id="dashboard" class="screen active">
+                    <div class="page-header">
+                        <h1 class="page-title">Dashboard</h1>
+                        <p class="page-subtitle">Welcome back! Here's your TAMA38 project overview.</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Active Projects</div>
+                            <div class="kpi-value">12</div>
+                            <div class="kpi-change">↑ 2 new this month</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total Buildings</div>
+                            <div class="kpi-value">248</div>
+                            <div class="kpi-change">↑ 8% signature rate</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Overall Signature</div>
+                            <div class="kpi-value">67%</div>
+                            <div class="kpi-change">Target: 75% (Target required)</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total Owners</div>
+                            <div class="kpi-value">1,842</div>
+                            <div class="kpi-change">568 signed this month</div>
+                        </div>
+                    </div>
+
+                    <div class="traffic-light-grid">
+                        <div class="traffic-light-title">Building Status Overview</div>
+                        <div class="traffic-lights">
+                            <div class="traffic-item">
+                                <div class="light green">82</div>
+                                <div class="light-label">GREEN</div>
+                                <div class="light-count">≥75% signatures</div>
+                            </div>
+                            <div class="traffic-item">
+                                <div class="light yellow">104</div>
+                                <div class="light-label">YELLOW</div>
+                                <div class="light-count">50-75% signatures</div>
+                            </div>
+                            <div class="traffic-item">
+                                <div class="light red">62</div>
+                                <div class="light-label">RED</div>
+                                <div class="light-count">&lt;50% signatures</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>Top Buildings by Priority</div>
+                            <div>Signature %</div>
+                            <div>Units</div>
+                            <div>Last Activity</div>
+                            <div>Status</div>
+                        </div>
+                        <div class="table-row" onclick="switchScreen('building-detail')">
+                            <div>
+                                <div class="building-name">Bldg-001 | 123 King Street</div>
+                                <div class="building-address">Jerusalem, Downtown District</div>
+                            </div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 85%"></div></div>85%</div>
+                            <div>24 units</div>
+                            <div style="font-size: 13px; color: var(--text-light);">Today 2:45 PM</div>
+                            <div><span class="status-badge status-green">GREEN</span></div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Bldg-002 | 456 Ben Yehuda Ave</div>
+                                <div class="building-address">Jerusalem, Downtown District</div>
+                            </div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 68%"></div></div>68%</div>
+                            <div>18 units</div>
+                            <div style="font-size: 13px; color: var(--text-light);">Yesterday 3:20 PM</div>
+                            <div><span class="status-badge status-yellow">YELLOW</span></div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Bldg-003 | 789 Herzl Street</div>
+                                <div class="building-address">Jerusalem, German Colony</div>
+                            </div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 42%"></div></div>42%</div>
+                            <div>32 units</div>
+                            <div style="font-size: 13px; color: var(--text-light);">3 days ago</div>
+                            <div><span class="status-badge status-red">RED</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-20">
+                        <h3 style="margin-bottom: 16px;">Recent Interactions (Last 24 Hours)</h3>
+                        <div class="interaction-list">
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">Today 2:45 PM</div>
+                                    <div class="interaction-type">Phone Call - David Moran</div>
+                                    <div class="interaction-details">Owner: Yael Kohen | Building: Bldg-001 | Unit 304</div>
+                                    <span class="sentiment-badge sentiment-positive">POSITIVE</span>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">Follow-up: Tomorrow</div>
+                            </div>
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">Today 10:30 AM</div>
+                                    <div class="interaction-type">In-Person Meeting - Sarah Goldman</div>
+                                    <div class="interaction-details">Owner: Moshe Levi | Building: Bldg-002 | Unit 201</div>
+                                    <span class="sentiment-badge sentiment-neutral">NEUTRAL</span>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">Follow-up: 3 days</div>
+                            </div>
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">Yesterday 4:15 PM</div>
+                                    <div class="interaction-type">WhatsApp Message - David Moran</div>
+                                    <div class="interaction-details">Owner: Ruth Cohen | Building: Bldg-001 | Unit 108</div>
+                                    <span class="sentiment-badge sentiment-negative">ESCALATED</span>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">Urgent Follow-up</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUILDING DETAIL SCREEN -->
+                <div id="building-detail" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Bldg-001 | 123 King Street</h1>
+                        <p class="page-subtitle">Jerusalem, Downtown District | Project: Urban Renewal 2024</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Signature Rate</div>
+                            <div class="kpi-value">85%</div>
+                            <div class="kpi-change">20 of 24 owners</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total Units</div>
+                            <div class="kpi-value">24</div>
+                            <div class="kpi-change">All fully identified</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Traffic Light</div>
+                            <div class="kpi-value" style="color: var(--traffic-green);">🟢</div>
+                            <div class="kpi-change">Excellent progress</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Last Activity</div>
+                            <div class="kpi-value" style="font-size: 16px;">Today</div>
+                            <div class="kpi-change">2:45 PM by David Moran</div>
+                        </div>
+                    </div>
+
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab('units-tab', this)">Units (24)</div>
+                        <div class="tab" onclick="switchTab('owners-tab', this)">Owners (28)</div>
+                        <div class="tab" onclick="switchTab('interactions-tab', this)">Interactions (156)</div>
+                        <div class="tab" onclick="switchTab('tasks-tab', this)">Tasks (3)</div>
+                        <div class="tab" onclick="switchTab('comms-tab', this)">Communications (42)</div>
+                    </div>
+
+                    <!-- Units Tab -->
+                    <div id="units-tab" class="tab-content">
+                        <div class="data-table">
+                            <div class="table-header">
+                                <div>Unit</div>
+                                <div>Area (m²)</div>
+                                <div>Owners</div>
+                                <div>Signature %</div>
+                                <div>Status</div>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <div class="building-name">Unit 101</div>
+                                    <div class="building-address">Floor 1 | 65 m²</div>
+                                </div>
+                                <div>65</div>
+                                <div>1</div>
+                                <div><div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>100%</div>
+                                <div><span class="status-badge status-green">SIGNED</span></div>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <div class="building-name">Unit 102</div>
+                                    <div class="building-address">Floor 1 | 70 m²</div>
+                                </div>
+                                <div>70</div>
+                                <div>2</div>
+                                <div><div class="progress-bar"><div class="progress-fill" style="width: 50%"></div></div>50%</div>
+                                <div><span class="status-badge status-yellow">PENDING</span></div>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <div class="building-name">Unit 103</div>
+                                    <div class="building-address">Floor 1 | 75 m²</div>
+                                </div>
+                                <div>75</div>
+                                <div>1</div>
+                                <div><div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>100%</div>
+                                <div><span class="status-badge status-green">SIGNED</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Owners Tab -->
+                    <div id="owners-tab" class="tab-content" style="display: none;">
+                        <div class="data-table">
+                            <div class="table-header">
+                                <div>Owner Name</div>
+                                <div>Units</div>
+                                <div>Share %</div>
+                                <div>Status</div>
+                                <div>Last Contact</div>
+                            </div>
+                            <div class="table-row" onclick="switchScreen('owner-detail')">
+                                <div>
+                                    <div class="building-name">Yael Kohen</div>
+                                    <div class="building-address">ID: 123456789</div>
+                                </div>
+                                <div>Unit 304</div>
+                                <div>100%</div>
+                                <div><span class="status-badge status-green">SIGNED</span></div>
+                                <div style="font-size: 13px; color: var(--text-light);">Today 2:45 PM</div>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <div class="building-name">Moshe Levi</div>
+                                    <div class="building-address">ID: 987654321</div>
+                                </div>
+                                <div>Unit 201, 202</div>
+                                <div>50% each</div>
+                                <div><span class="status-badge status-yellow">NEGOTIATING</span></div>
+                                <div style="font-size: 13px; color: var(--text-light);">Today 10:30 AM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactions Tab -->
+                    <div id="interactions-tab" class="tab-content" style="display: none;">
+                        <div class="interaction-list">
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">Today 2:45 PM</div>
+                                    <div class="interaction-type">Phone Call - Yael Kohen</div>
+                                    <div class="interaction-details">Agent: David Moran | Unit: 304 | Duration: 8 min</div>
+                                    <span class="sentiment-badge sentiment-positive">POSITIVE</span>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">Follow-up: Tomorrow</div>
+                            </div>
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">Today 10:30 AM</div>
+                                    <div class="interaction-type">In-Person Meeting - Moshe Levi</div>
+                                    <div class="interaction-details">Agent: Sarah Goldman | Units: 201, 202 | Duration: 25 min</div>
+                                    <span class="sentiment-badge sentiment-neutral">NEUTRAL</span>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">Follow-up: 3 days</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Tab -->
+                    <div id="tasks-tab" class="tab-content" style="display: none;">
+                        <div class="interaction-list">
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">Due: Tomorrow</div>
+                                    <div class="interaction-type">Schedule Meeting - Moshe Levi</div>
+                                    <div class="interaction-details">Assigned to: Sarah Goldman | Units: 201, 202</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="status-badge status-yellow">OPEN</span>
+                                </div>
+                            </div>
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">Due: In 3 days</div>
+                                    <div class="interaction-type">Follow-up Call - Unit 102 Owner</div>
+                                    <div class="interaction-details">Assigned to: David Moran | Units: 102</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="status-badge status-yellow">OPEN</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Communications Tab -->
+                    <div id="comms-tab" class="tab-content" style="display: none;">
+                        <div class="interaction-list">
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">Today 9:00 AM</div>
+                                    <div class="interaction-type">Email - Building Announcement</div>
+                                    <div class="interaction-details">To: All Owners | Template: Project_Update_HE | Status: Delivered (24 of 28 opened)</div>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">
+                                    <div>85% open rate</div>
+                                    <div>12 clicks</div>
+                                </div>
+                            </div>
+                            <div class="interaction-item">
+                                <div class="interaction-left">
+                                    <div class="interaction-date">Yesterday 5:30 PM</div>
+                                    <div class="interaction-type">WhatsApp Message - Reminder</div>
+                                    <div class="interaction-details">To: Unit 102, 103 Owners | Template: Meeting_Reminder | Status: Delivered</div>
+                                </div>
+                                <div style="text-align: right; font-size: 12px; color: var(--text-light);">
+                                    <div>Delivered: 2/2</div>
+                                    <div>Read: 2/2</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OWNER DETAIL SCREEN -->
+                <div id="owner-detail" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Yael Kohen</h1>
+                        <p class="page-subtitle">ID: 123456789 | Building: Bldg-001 | Unit: 304</p>
+                    </div>
+
+                    <div class="flex gap-16 mb-24">
+                        <div style="flex: 1;">
+                            <div class="data-table">
+                                <div class="table-header">
+                                    <div>Contact Information</div>
+                                </div>
+                                <div style="padding: 20px;">
+                                    <div style="margin-bottom: 12px;"><strong>Phone:</strong> +972-2-123-4567</div>
+                                    <div style="margin-bottom: 12px;"><strong>Email:</strong> yael.kohen@email.com</div>
+                                    <div style="margin-bottom: 12px;"><strong>Preferred Contact:</strong> WhatsApp</div>
+                                    <div style="margin-bottom: 12px;"><strong>Language:</strong> Hebrew</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="flex: 1;">
+                            <div class="data-table">
+                                <div class="table-header">
+                                    <div>TAMA38 Status</div>
+                                </div>
+                                <div style="padding: 20px;">
+                                    <div style="margin-bottom: 12px;"><strong>Signature Status:</strong> <span class="status-badge status-green">SIGNED</span></div>
+                                    <div style="margin-bottom: 12px;"><strong>Signature Date:</strong> 15 Dec 2024</div>
+                                    <div style="margin-bottom: 12px;"><strong>Ownership Share:</strong> 100%</div>
+                                    <div style="margin-bottom: 12px;"><strong>Last Contact:</strong> Today 2:45 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-bottom: 16px;">Interaction History</h3>
+                    <div class="interaction-list">
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">Today 2:45 PM</div>
+                                <div class="interaction-type">Phone Call - David Moran</div>
+                                <div class="interaction-details">Duration: 8 minutes | Outcome: Agreed to Sign</div>
+                                <span class="sentiment-badge sentiment-positive">POSITIVE</span>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">2 days ago - 3:00 PM</div>
+                                <div class="interaction-type">WhatsApp Message - David Moran</div>
+                                <div class="interaction-details">Meeting confirmation message sent</div>
+                                <span class="sentiment-badge sentiment-positive">POSITIVE</span>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">5 days ago - 10:00 AM</div>
+                                <div class="interaction-type">In-Person Meeting - David Moran</div>
+                                <div class="interaction-details">Duration: 45 minutes | Discussed project details and incentives</div>
+                                <span class="sentiment-badge sentiment-positive">POSITIVE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROJECTS SCREEN -->
+                <div id="projects" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Projects</h1>
+                        <p class="page-subtitle">All active TAMA38 urban renewal projects</p>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ New Project</button>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>Project</div>
+                            <div>Buildings</div>
+                            <div>Signature %</div>
+                            <div>Status</div>
+                            <div>Manager</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Urban Renewal 2024 - Jerusalem</div>
+                                <div class="building-address">Downtown, German Colony, Rehavia Districts</div>
+                            </div>
+                            <div>248</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 67%"></div></div>67%</div>
+                            <div><span class="status-badge status-yellow">ACTIVE</span></div>
+                            <div style="font-size: 13px;">David Moran</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Urban Renewal Phase 2 - Tel Aviv</div>
+                                <div class="building-address">Rabin Square, Florentin, Center Districts</div>
+                            </div>
+                            <div>156</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 82%"></div></div>82%</div>
+                            <div><span class="status-badge status-green">ACTIVE</span></div>
+                            <div style="font-size: 13px;">Rivka Brenner</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUILDINGS SCREEN -->
+                <div id="buildings" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Buildings</h1>
+                        <p class="page-subtitle">Complete list of all buildings in projects</p>
+                    </div>
+
+                    <div style="margin-bottom: 16px; display: flex; gap: 12px;">
+                        <input type="text" class="search-box" placeholder="Search buildings...">
+                        <button class="btn btn-secondary">Filter</button>
+                        <button class="btn btn-primary">+ Add Building</button>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>Building</div>
+                            <div>Project</div>
+                            <div>Signature %</div>
+                            <div>Status</div>
+                            <div>Agent</div>
+                        </div>
+                        <div class="table-row" onclick="switchScreen('building-detail')">
+                            <div>
+                                <div class="building-name">Bldg-001 | 123 King Street</div>
+                                <div class="building-address">Jerusalem, Downtown</div>
+                            </div>
+                            <div>Urban Renewal 2024</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 85%"></div></div>85%</div>
+                            <div><span class="status-badge status-green">GREEN</span></div>
+                            <div style="font-size: 13px;">David Moran</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Bldg-002 | 456 Ben Yehuda Ave</div>
+                                <div class="building-address">Jerusalem, Downtown</div>
+                            </div>
+                            <div>Urban Renewal 2024</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 68%"></div></div>68%</div>
+                            <div><span class="status-badge status-yellow">YELLOW</span></div>
+                            <div style="font-size: 13px;">Sarah Goldman</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Bldg-003 | 789 Herzl Street</div>
+                                <div class="building-address">Jerusalem, German Colony</div>
+                            </div>
+                            <div>Urban Renewal 2024</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 42%"></div></div>42%</div>
+                            <div><span class="status-badge status-red">RED</span></div>
+                            <div style="font-size: 13px;">Moshe Barkai</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UNITS SCREEN -->
+                <div id="units" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Units</h1>
+                        <p class="page-subtitle">All residential units in the system</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total Units</div>
+                            <div class="kpi-value">5,248</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Fully Signed</div>
+                            <div class="kpi-value">3,516</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Pending</div>
+                            <div class="kpi-value">1,284</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Refused</div>
+                            <div class="kpi-value">448</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ New Unit</button>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>Unit</div>
+                            <div>Building</div>
+                            <div>Owners</div>
+                            <div>Signature %</div>
+                            <div>Status</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Unit 304</div>
+                                <div class="building-address">Bldg-001 | Floor 3</div>
+                            </div>
+                            <div>Bldg-001</div>
+                            <div>1</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>100%</div>
+                            <div><span class="status-badge status-green">SIGNED</span></div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Unit 201</div>
+                                <div class="building-address">Bldg-002 | Floor 2</div>
+                            </div>
+                            <div>Bldg-002</div>
+                            <div>2</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 50%"></div></div>50%</div>
+                            <div><span class="status-badge status-yellow">PENDING</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OWNERS SCREEN -->
+                <div id="owners" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Owners</h1>
+                        <p class="page-subtitle">Manage all property owners in the system</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total Owners</div>
+                            <div class="kpi-value">1,842</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Signed</div>
+                            <div class="kpi-value">1,274</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Pending</div>
+                            <div class="kpi-value">568</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ New Owner</button>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>Owner</div>
+                            <div>Units</div>
+                            <div>Status</div>
+                            <div>Last Contact</div>
+                            <div>Action</div>
+                        </div>
+                        <div class="table-row" onclick="switchScreen('owner-detail')">
+                            <div>
+                                <div class="building-name">Yael Kohen</div>
+                                <div class="building-address">ID: 123456789</div>
+                            </div>
+                            <div>Bldg-001 Unit 304</div>
+                            <div><span class="status-badge status-green">SIGNED</span></div>
+                            <div style="font-size: 13px;">Today 2:45 PM</div>
+                            <div><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">View</button></div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Moshe Levi</div>
+                                <div class="building-address">ID: 987654321</div>
+                            </div>
+                            <div>Bldg-002 Unit 201, 202</div>
+                            <div><span class="status-badge status-yellow">NEGOTIATING</span></div>
+                            <div style="font-size: 13px;">Today 10:30 AM</div>
+                            <div><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;">View</button></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INTERACTIONS SCREEN -->
+                <div id="interactions" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Interactions</h1>
+                        <p class="page-subtitle">Complete audit log of all owner interactions</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">This Month</div>
+                            <div class="kpi-value">2,456</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">This Week</div>
+                            <div class="kpi-value">486</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Today</div>
+                            <div class="kpi-value">124</div>
+                        </div>
+                    </div>
+
+                    <div class="interaction-list">
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">Today 2:45 PM</div>
+                                <div class="interaction-type">Phone Call - David Moran → Yael Kohen</div>
+                                <div class="interaction-details">Building: Bldg-001 | Unit: 304 | Duration: 8 min | Outcome: Agreed to Sign</div>
+                                <span class="sentiment-badge sentiment-positive">POSITIVE</span>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">Today 10:30 AM</div>
+                                <div class="interaction-type">In-Person Meeting - Sarah Goldman → Moshe Levi</div>
+                                <div class="interaction-details">Building: Bldg-002 | Units: 201, 202 | Duration: 25 min | Outcome: Uncertain</div>
+                                <span class="sentiment-badge sentiment-neutral">NEUTRAL</span>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">Yesterday 4:15 PM</div>
+                                <div class="interaction-type">WhatsApp Message - David Moran → Ruth Cohen</div>
+                                <div class="interaction-details">Building: Bldg-001 | Unit: 108 | Status: Delivered & Read | Escalation: Yes</div>
+                                <span class="sentiment-badge sentiment-negative">ESCALATED</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASKS SCREEN -->
+                <div id="tasks" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Tasks</h1>
+                        <p class="page-subtitle">Follow-ups and action items management</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Open Tasks</div>
+                            <div class="kpi-value">42</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Overdue</div>
+                            <div class="kpi-value">5</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Due Today</div>
+                            <div class="kpi-value">8</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ New Task</button>
+                    </div>
+
+                    <div class="interaction-list">
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">Due: Tomorrow</div>
+                                <div class="interaction-type">Schedule Meeting - Moshe Levi</div>
+                                <div class="interaction-details">Assigned to: Sarah Goldman | Building: Bldg-002</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="status-badge status-yellow">OPEN</span>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">Due: Today 5:00 PM</div>
+                                <div class="interaction-type">Follow-up Call - Ruth Cohen</div>
+                                <div class="interaction-details">Assigned to: David Moran | Building: Bldg-001</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="status-badge status-red">URGENT</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMMUNICATIONS SCREEN -->
+                <div id="communications" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Communications</h1>
+                        <p class="page-subtitle">Email, SMS, WhatsApp message logs</p>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ Send Message</button>
+                    </div>
+
+                    <div class="interaction-list">
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">Today 9:00 AM</div>
+                                <div class="interaction-type">Email - Building Announcement</div>
+                                <div class="interaction-details">To: 28 owners | Template: Project_Update_HE | Delivered: 28/28 | Opened: 24/28</div>
+                            </div>
+                            <div style="text-align: right; font-size: 12px;">
+                                <div style="color: var(--traffic-green);">✓ Delivered</div>
+                                <div style="color: var(--text-light);">85% open rate</div>
+                            </div>
+                        </div>
+                        <div class="interaction-item">
+                            <div class="interaction-left">
+                                <div class="interaction-date">Yesterday 5:30 PM</div>
+                                <div class="interaction-type">WhatsApp Message - Meeting Reminder</div>
+                                <div class="interaction-details">To: 15 owners | Status: Delivered & Read 15/15</div>
+                            </div>
+                            <div style="text-align: right; font-size: 12px;">
+                                <div style="color: var(--traffic-green);">✓ Delivered</div>
+                                <div style="color: var(--text-light);">100% read</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INCENTIVES SCREEN -->
+                <div id="incentives" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Incentive Programs</h1>
+                        <p class="page-subtitle">Manage incentive programs and claims</p>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary">+ New Program</button>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div>Program</div>
+                            <div>Type</div>
+                            <div>Budget</div>
+                            <div>Claimed</div>
+                            <div>Status</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Tax Benefit Program</div>
+                                <div class="building-address">For signature compliance</div>
+                            </div>
+                            <div>Tax Reduction</div>
+                            <div>₪ 500,000</div>
+                            <div>₪ 285,000</div>
+                            <div><span class="status-badge status-green">ACTIVE</span></div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Renovation Grant Program</div>
+                                <div class="building-address">For post-signing improvements</div>
+                            </div>
+                            <div>Grant</div>
+                            <div>₪ 250,000</div>
+                            <div>₪ 180,000</div>
+                            <div><span class="status-badge status-green">ACTIVE</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTS SCREEN -->
+                <div id="reports" class="screen">
+                    <div class="page-header">
+                        <h1 class="page-title">Analytics & Reports</h1>
+                        <p class="page-subtitle">Performance metrics and insights</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Avg Success Rate</div>
+                            <div class="kpi-value">68%</div>
+                            <div class="kpi-change">All agents combined</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Avg Call Duration</div>
+                            <div class="kpi-value">12 min</div>
+                            <div class="kpi-change">Phone interactions</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Positive Sentiment</div>
+                            <div class="kpi-value">72%</div>
+                            <div class="kpi-change">Of all interactions</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Top Agent</div>
+                            <div class="kpi-value" style="font-size: 18px;">Rivka</div>
+                            <div class="kpi-change">82% success rate</div>
+                        </div>
+                    </div>
+
+                    <div class="data-table mb-24">
+                        <div class="table-header">
+                            <div>Agent</div>
+                            <div>Interactions</div>
+                            <div>Success Rate</div>
+                            <div>Avg Duration</div>
+                            <div>Avg Sentiment</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Rivka Brenner</div>
+                            </div>
+                            <div>324</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 82%"></div></div>82%</div>
+                            <div>14 min</div>
+                            <div style="color: var(--traffic-green); font-weight: 600;">+0.8</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">David Moran</div>
+                            </div>
+                            <div>298</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 78%"></div></div>78%</div>
+                            <div>13 min</div>
+                            <div style="color: var(--traffic-green); font-weight: 600;">+0.7</div>
+                        </div>
+                        <div class="table-row">
+                            <div>
+                                <div class="building-name">Sarah Goldman</div>
+                            </div>
+                            <div>276</div>
+                            <div><div class="progress-bar"><div class="progress-fill" style="width: 72%"></div></div>72%</div>
+                            <div>12 min</div>
+                            <div style="color: var(--text-light);">+0.6</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-bottom: 16px;">Charts & Trends</h3>
+                    <div class="chart-placeholder">
+                        📊 Interactive charts would display here: Success rate trends, signature progress by project, agent performance ranking, sentiment analysis, etc.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN SWITCHER -->
+    <div class="screen-switcher">
+        <label class="screen-switcher-label">Quick Navigation</label>
+        <select onchange="switchScreen(this.value)">
+            <option value="">Select a screen...</option>
+            <option value="dashboard">Dashboard</option>
+            <option value="projects">Projects</option>
+            <option value="buildings">Buildings</option>
+            <option value="building-detail">Building Detail</option>
+            <option value="units">Units</option>
+            <option value="owners">Owners</option>
+            <option value="owner-detail">Owner Detail</option>
+            <option value="interactions">Interactions</option>
+            <option value="tasks">Tasks</option>
+            <option value="communications">Communications</option>
+            <option value="incentives">Incentive Programs</option>
+            <option value="reports">Analytics & Reports</option>
+        </select>
+    </div>
+
+    <script>
+        function switchScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+
+            // Show selected screen
+            const selectedScreen = document.getElementById(screenId);
+            if (selectedScreen) {
+                selectedScreen.classList.add('active');
+                
+                // Update breadcrumb
+                const screenNames = {
+                    'dashboard': 'Dashboard',
+                    'projects': 'Projects',
+                    'buildings': 'Buildings',
+                    'building-detail': 'Building Detail',
+                    'units': 'Units',
+                    'owners': 'Owners',
+                    'owner-detail': 'Owner Detail',
+                    'interactions': 'Interactions',
+                    'tasks': 'Tasks',
+                    'communications': 'Communications',
+                    'incentives': 'Incentive Programs',
+                    'reports': 'Analytics & Reports'
+                };
+                
+                document.getElementById('breadcrumb-current').textContent = screenNames[screenId] || 'Screen';
+                
+                // Update active nav item
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Scroll to top
+                document.querySelector('.content-area').scrollTop = 0;
+            }
+        }
+
+        function switchTab(tabId, tabElement) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+
+            // Show selected tab
+            const selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+            }
+
+            // Update active tab styling
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            tabElement.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+"""
+Owners API endpoints with multi-unit support
+"""
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import or_
+from pydantic import BaseModel, EmailStr
+from uuid import UUID
+from datetime import datetime
+from app.core.database import get_db
+from app.models.user import User
+from app.models.owner import Owner
+from app.models.unit import Unit
+from app.api.dependencies import get_current_user
+import logging
+
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/owners", tags=["owners"])
+
+
+class OwnerCreate(BaseModel):
+    unit_id: str
+    full_name: str
+    id_number: Optional[str] = None  # Will be encrypted in Phase 2
+    phone: Optional[str] = None  # Will be encrypted in Phase 2
+    email: Optional[EmailStr] = None
+    ownership_share_percent: float
+    preferred_contact_method: Optional[str] = None
+    preferred_language: Optional[str] = None
+    link_to_existing: Optional[bool] = False
+    existing_owner_id: Optional[str] = None
+
+
+class OwnerResponse(BaseModel):
+    owner_id: str
+    unit_id: str
+    full_name: str
+    phone_for_contact: Optional[str]
+    email: Optional[str]
+    ownership_share_percent: float
+    owner_status: str
+    preferred_contact_method: Optional[str]
+    preferred_language: Optional[str]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+@router.get("", response_model=List[OwnerResponse])
+async def list_owners(
+    unit_id: Optional[UUID] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """List owners (optionally filtered by unit)"""
+    query = db.query(Owner).filter(Owner.is_deleted == False)
+    
+    if unit_id:
+        query = query.filter(Owner.unit_id == unit_id)
+    
+    # Role-based filtering
+    if current_user.role == "AGENT":
+        query = query.filter(Owner.assigned_agent_id == current_user.user_id)
+    
+    owners = query.offset(skip).limit(limit).all()
+    # Convert UUIDs to strings for response
+    return [
+        OwnerResponse(
+            owner_id=str(o.owner_id),
+            unit_id=str(o.unit_id),
+            full_name=o.full_name,
+            phone_for_contact=o.phone_for_contact,
+            email=o.email,
+            ownership_share_percent=float(o.ownership_share_percent),
+            owner_status=o.owner_status,
+            preferred_contact_method=o.preferred_contact_method,
+            preferred_language=o.preferred_language,
+            created_at=o.created_at,
+        )
+        for o in owners
+    ]
+
+
+@router.post("", response_model=OwnerResponse, status_code=status.HTTP_201_CREATED)
+async def create_owner(
+    owner_data: OwnerCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new owner (with multi-unit support)"""
+    # Verify unit exists
+    unit = db.query(Unit).filter(
+        Unit.unit_id == owner_data.unit_id,
+        Unit.is_deleted == False
+    ).first()
+    
+    if not unit:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unit not found"
+        )
+    
+    # Check if linking to existing owner
+    if owner_data.link_to_existing and owner_data.existing_owner_id:
+        existing_owner = db.query(Owner).filter(
+            Owner.owner_id == owner_data.existing_owner_id,
+            Owner.is_deleted == False
+        ).first()
+        
+        if not existing_owner:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Existing owner not found"
+            )
+        
+        # Create new owner record linked to same person (multi-unit ownership)
+        owner = Owner(
+            unit_id=UUID(owner_data.unit_id),
+            full_name=existing_owner.full_name,  # Use existing owner's name
+            id_number_hash=existing_owner.id_number_hash,  # Link via hash
+            phone_hash=existing_owner.phone_hash,
+            phone_for_contact=owner_data.phone or existing_owner.phone_for_contact,
+            email=owner_data.email or existing_owner.email,
+            ownership_share_percent=owner_data.ownership_share_percent,
+            preferred_contact_method=owner_data.preferred_contact_method or existing_owner.preferred_contact_method,
+            preferred_language=owner_data.preferred_language or existing_owner.preferred_language,
+            assigned_agent_id=existing_owner.assigned_agent_id,
+        )
+    else:
+        # Create new owner
+        owner = Owner(
+            unit_id=UUID(owner_data.unit_id),
+            full_name=owner_data.full_name,
+            phone_for_contact=owner_data.phone,
+            email=owner_data.email,
+            ownership_share_percent=owner_data.ownership_share_percent,
+            preferred_contact_method=owner_data.preferred_contact_method,
+            preferred_language=owner_data.preferred_language,
+            assigned_agent_id=current_user.user_id if current_user.role == "AGENT" else None,
+        )
+    
+    # Validate ownership share totals 100% per unit
+    existing_owners = db.query(Owner).filter(
+        Owner.unit_id == owner_data.unit_id,
+        Owner.is_deleted == False,
+        Owner.is_current_owner == True
+    ).all()
+    
+    total_share = sum(float(o.ownership_share_percent) for o in existing_owners) + owner_data.ownership_share_percent
+    
+    if total_share > 100.0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Total ownership share cannot exceed 100%. Current total: {total_share}%"
+        )
+    
+    db.add(owner)
+    
+    # Update unit owner counts
+    unit.total_owners = len(existing_owners) + 1
+    unit.is_co_owned = unit.total_owners > 1
+    
+    db.commit()
+    db.refresh(owner)
+    
+    logger.info(
+        "Owner created",
+        extra={
+            "owner_id": str(owner.owner_id),
+            "unit_id": str(owner.unit_id),
+            "user_id": str(current_user.user_id),
+            "is_multi_unit": owner_data.link_to_existing or False,
+        }
+    )
+    
+    # Convert UUIDs to strings for response
+    return OwnerResponse(
+        owner_id=str(owner.owner_id),
+        unit_id=str(owner.unit_id),
+        full_name=owner.full_name,
+        phone_for_contact=owner.phone_for_contact,
+        email=owner.email,
+        ownership_share_percent=float(owner.ownership_share_percent),
+        owner_status=owner.owner_status,
+        preferred_contact_method=owner.preferred_contact_method,
+        preferred_language=owner.preferred_language,
+        created_at=owner.created_at,
+    )
+
+
+@router.get("/{owner_id}", response_model=OwnerResponse)
+async def get_owner(
+    owner_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get owner details"""
+    owner = db.query(Owner).filter(
+        Owner.owner_id == owner_id,
+        Owner.is_deleted == False
+    ).first()
+    
+    if not owner:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Owner not found"
+        )
+    
+    # Convert UUIDs to strings for response
+    return OwnerResponse(
+        owner_id=str(owner.owner_id),
+        unit_id=str(owner.unit_id),
+        full_name=owner.full_name,
+        phone_for_contact=owner.phone_for_contact,
+        email=owner.email,
+        ownership_share_percent=float(owner.ownership_share_percent),
+        owner_status=owner.owner_status,
+        preferred_contact_method=owner.preferred_contact_method,
+        preferred_language=owner.preferred_language,
+        created_at=owner.created_at,
+    )
+
+
+@router.get("/{owner_id}/units", response_model=List[dict])
+async def get_owner_units(
+    owner_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get all units owned by this owner (multi-unit ownership support)"""
+    owner = db.query(Owner).filter(
+        Owner.owner_id == owner_id,
+        Owner.is_deleted == False
+    ).first()
+    
+    if not owner:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Owner not found"
+        )
+    
+    # Find all units owned by same person (via id_number_hash or phone_hash)
+    if owner.id_number_hash:
+        same_owners = db.query(Owner).filter(
+            Owner.id_number_hash == owner.id_number_hash,
+            Owner.is_deleted == False,
+            Owner.is_current_owner == True
+        ).all()
+    elif owner.phone_hash:
+        same_owners = db.query(Owner).filter(
+            Owner.phone_hash == owner.phone_hash,
+            Owner.is_deleted == False,
+            Owner.is_current_owner == True
+        ).all()
+    else:
+        same_owners = [owner]
+    
+    # Get units for these owners
+    unit_ids = [o.unit_id for o in same_owners]
+    units = db.query(Unit).filter(Unit.unit_id.in_(unit_ids)).all()
+    
+    result = []
+    for unit in units:
+        unit_owner = next((o for o in same_owners if o.unit_id == unit.unit_id), None)
+        result.append({
+            "unit_id": str(unit.unit_id),
+            "unit_number": unit.unit_number,
+            "floor_number": unit.unit_number,
+            "building_id": str(unit.building_id),
+            "ownership_share_percent": float(unit_owner.ownership_share_percent) if unit_owner else 0,
+        })
+    
+    return result
+
+
+@router.get("/search", response_model=List[OwnerResponse])
+async def search_owners(
+    query: str = Query(..., min_length=2),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Search for existing owners by name or ID"""
+    search_filter = or_(
+        Owner.full_name.ilike(f"%{query}%"),
+        Owner.phone_for_contact.ilike(f"%{query}%"),
+        Owner.email.ilike(f"%{query}%"),
+    )
+    
+    owners = db.query(Owner).filter(
+        search_filter,
+        Owner.is_deleted == False,
+        Owner.is_current_owner == True
+    ).limit(20).all()
+    
+    # Convert UUIDs to strings for response
+    return [
+        OwnerResponse(
+            owner_id=str(o.owner_id),
+            unit_id=str(o.unit_id),
+            full_name=o.full_name,
+            phone_for_contact=o.phone_for_contact,
+            email=o.email,
+            ownership_share_percent=float(o.ownership_share_percent),
+            owner_status=o.owner_status,
+            preferred_contact_method=o.preferred_contact_method,
+            preferred_language=o.preferred_language,
+            created_at=o.created_at,
+        )
+        for o in owners
+    ]
+
