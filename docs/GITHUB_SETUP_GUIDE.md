@@ -1,6 +1,11 @@
-# GitHub Remote Setup Guide for TAMA38
+# GitHub Remote Setup Guide - TAMA38
 
-**Quick setup guide for connecting TAMA38 project to GitHub**
+**Initial setup guide for GitHub remote repository**
+
+> **📚 Related Guides**:
+> - **SSH Authentication**: See [`WINDOWS_SSH_SETUP_COMPLETE.md`](./WINDOWS_SSH_SETUP_COMPLETE.md)
+> - **Git Workflow**: See [`GIT_SETUP_GUIDE.md`](./GIT_SETUP_GUIDE.md)
+> - **Git Policy**: See [`CURSOR_GIT_POLICY.md`](./CURSOR_GIT_POLICY.md)
 
 ---
 
