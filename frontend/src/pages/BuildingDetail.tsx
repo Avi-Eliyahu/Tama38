@@ -61,11 +61,17 @@ export default function BuildingDetail() {
 
       // Load units for this building
       const unitsData = await unitsService.getUnits(buildingId);
-      setUnits(unitsData);
+      // Sort units by apartment number (unit_number) - convert to number for proper sorting
+      const sortedUnits = [...unitsData].sort((a, b) => {
+        const numA = parseInt(a.unit_number) || 0;
+        const numB = parseInt(b.unit_number) || 0;
+        return numA - numB;
+      });
+      setUnits(sortedUnits);
 
       // Load all owners for all units in this building
       const ownersList: Array<{ owner: Owner; unit: Unit }> = [];
-      for (const unit of unitsData) {
+      for (const unit of sortedUnits) {
         try {
           const unitOwners = await ownersService.getOwners(unit.unit_id);
           for (const owner of unitOwners) {

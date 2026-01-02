@@ -61,7 +61,13 @@ async def list_units(
     if building_id:
         query = query.filter(Unit.building_id == building_id)
     
-    units = query.offset(skip).limit(limit).all()
+    # Sort by unit_number (apartment number) - convert to integer for proper numeric sorting
+    # Handle cases where unit_number might not be numeric
+    from sqlalchemy import cast, Integer
+    units = query.order_by(
+        cast(Unit.unit_number, Integer).nulls_last(),
+        Unit.unit_number
+    ).offset(skip).limit(limit).all()
     # Convert UUIDs to strings for response
     return [
         UnitResponse(
