@@ -53,10 +53,7 @@ class DocumentsService {
     return response.data.download_url;
   }
 
-  async downloadDocument(documentId: string, filename?: string): Promise<void> {
-    // Get the document to get the filename if not provided
-    const doc = filename ? { file_name: filename } : await this.getDocument(documentId);
-    
+  async getDocumentViewUrl(documentId: string): Promise<string> {
     // Fetch the file using axios with authentication and blob response type
     // Use the files endpoint directly to get the file with proper auth headers
     const response = await apiClient.get(`/files/${documentId}`, {
@@ -66,8 +63,16 @@ class DocumentsService {
     // When responseType is 'blob', axios already returns a Blob
     const blob = response.data as Blob;
     
-    // Create a blob URL from the blob
-    const url = window.URL.createObjectURL(blob);
+    // Create a blob URL for viewing (caller is responsible for revoking it)
+    return window.URL.createObjectURL(blob);
+  }
+
+  async downloadDocument(documentId: string, filename?: string): Promise<void> {
+    // Get the document to get the filename if not provided
+    const doc = filename ? { file_name: filename } : await this.getDocument(documentId);
+    
+    // Get blob URL for the file
+    const url = await this.getDocumentViewUrl(documentId);
     
     // Create a temporary link and trigger download
     const link = document.createElement('a');

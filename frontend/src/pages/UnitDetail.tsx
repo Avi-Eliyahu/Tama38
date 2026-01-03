@@ -8,6 +8,7 @@ import { ownersService, Owner } from '../services/owners';
 import { interactionsService, Interaction } from '../services/interactions';
 import { tasksService, Task } from '../services/tasks';
 import { documentsService, Document } from '../services/documents';
+import PDFViewer from '../components/PDFViewer';
 import Breadcrumbs, { BreadcrumbItem } from '../components/Breadcrumbs';
 
 export default function UnitDetail() {
@@ -25,6 +26,7 @@ export default function UnitDetail() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'owners' | 'interactions' | 'tasks' | 'documents'>('owners');
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
+  const [viewingDocument, setViewingDocument] = useState<{ documentId: string; filename: string } | null>(null);
 
   useEffect(() => {
     if (unitId) {
@@ -524,6 +526,50 @@ export default function UnitDetail() {
                         <p className="text-xs text-gray-400 mt-1">
                           {new Date(document.created_at).toLocaleDateString()}
                         </p>
+                        <div className="mt-3 flex items-center gap-2">
+                          {document.document_type === 'SIGNED_CONTRACT' || document.document_type === 'CONTRACT' ? (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setViewingDocument({
+                                    documentId: document.document_id,
+                                    filename: document.file_name
+                                  });
+                                }}
+                                className="px-3 py-1 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium flex items-center gap-1"
+                              >
+                                👁️ {t('documents.view')}
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await documentsService.downloadDocument(document.document_id, document.file_name);
+                                  } catch (err) {
+                                    console.error('Error downloading document:', err);
+                                    alert('Failed to download document');
+                                  }
+                                }}
+                                className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-medium flex items-center gap-1"
+                              >
+                                ⬇️ {t('documents.download')}
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await documentsService.downloadDocument(document.document_id, document.file_name);
+                                } catch (err) {
+                                  console.error('Error downloading document:', err);
+                                  alert('Failed to download document');
+                                }
+                              }}
+                              className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-medium flex items-center gap-1"
+                            >
+                              ⬇️ {t('documents.download')}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -533,6 +579,15 @@ export default function UnitDetail() {
           </div>
         )}
       </div>
+
+      {/* PDF Viewer Modal */}
+      {viewingDocument && (
+        <PDFViewer
+          documentId={viewingDocument.documentId}
+          filename={viewingDocument.filename}
+          onClose={() => setViewingDocument(null)}
+        />
+      )}
     </div>
   );
 }

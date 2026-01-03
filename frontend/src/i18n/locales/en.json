@@ -320,5 +320,11 @@
     "step5": "Review",
     "complete": "Complete",
     "reviewAndSubmit": "Review and Submit"
+  },
+  "documents": {
+    "view": "View",
+    "download": "Download",
+    "viewFailed": "Failed to view document",
+    "downloadFailed": "Failed to download document"
   }
 }

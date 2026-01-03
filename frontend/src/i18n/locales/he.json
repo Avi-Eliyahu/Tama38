@@ -294,5 +294,11 @@
     "step5": "סקירה",
     "complete": "השלם",
     "reviewAndSubmit": "סקור ושלח"
+  },
+  "documents": {
+    "view": "הצג",
+    "download": "הורד",
+    "viewFailed": "נכשל בהצגת המסמך",
+    "downloadFailed": "נכשל בהורדת המסמך"
   }
 }

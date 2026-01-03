@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { tasksService, Task } from '../services/tasks';
 import { authService } from '../services/auth';
 import { documentsService } from '../services/documents';
+import PDFViewer from '../components/PDFViewer';
 
 export default function Tasks() {
   const { t } = useTranslation();
@@ -11,6 +12,7 @@ export default function Tasks() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'my' | 'overdue'>('my');
+  const [viewingDocument, setViewingDocument] = useState<{ documentId: string; filename: string } | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -190,7 +192,18 @@ export default function Tasks() {
                           </Link>
                         </div>
                         {task.signed_document_id && task.signed_document_name && (
-                          <div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setViewingDocument({
+                                  documentId: task.signed_document_id!,
+                                  filename: task.signed_document_name!
+                                });
+                              }}
+                              className="px-3 py-1 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium flex items-center gap-1"
+                            >
+                              👁️ {t('documents.view')}
+                            </button>
                             <button
                               onClick={async () => {
                                 try {
@@ -203,10 +216,11 @@ export default function Tasks() {
                                   alert('Failed to download document');
                                 }
                               }}
-                              className="text-teal-600 hover:text-teal-700 hover:underline flex items-center gap-1"
+                              className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-medium flex items-center gap-1"
                             >
-                              📄 {t('tasks.viewSignedDocument')}: {task.signed_document_name}
+                              ⬇️ {t('documents.download')}
                             </button>
+                            <span className="text-sm text-gray-600">{task.signed_document_name}</span>
                           </div>
                         )}
                       </div>
@@ -240,6 +254,15 @@ export default function Tasks() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* PDF Viewer Modal */}
+      {viewingDocument && (
+        <PDFViewer
+          documentId={viewingDocument.documentId}
+          filename={viewingDocument.filename}
+          onClose={() => setViewingDocument(null)}
+        />
       )}
     </div>
   );

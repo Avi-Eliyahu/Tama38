@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { approvalsService, Signature } from '../services/approvals';
 import { ownersService, Owner } from '../services/owners';
 import { documentsService } from '../services/documents';
+import PDFViewer from '../components/PDFViewer';
 
 export default function Approvals() {
   const { t } = useTranslation();
@@ -15,6 +16,7 @@ export default function Approvals() {
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [approvalReason, setApprovalReason] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
+  const [viewingDocument, setViewingDocument] = useState<{ documentId: string; filename: string } | null>(null);
 
   useEffect(() => {
     loadApprovals();
@@ -162,7 +164,18 @@ export default function Approvals() {
                         </div>
                       )}
                       {signature.signed_document_id && signature.signed_document_name && (
-                        <div className="mt-2">
+                        <div className="mt-2 flex items-center gap-3">
+                          <button
+                            onClick={() => {
+                              setViewingDocument({
+                                documentId: signature.signed_document_id!,
+                                filename: signature.signed_document_name!
+                              });
+                            }}
+                            className="px-3 py-1 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium flex items-center gap-1"
+                          >
+                            👁️ {t('documents.view')}
+                          </button>
                           <button
                             onClick={async () => {
                               try {
@@ -175,10 +188,11 @@ export default function Approvals() {
                                 alert('Failed to download document');
                               }
                             }}
-                            className="text-teal-600 hover:text-teal-700 hover:underline flex items-center gap-1"
+                            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-medium flex items-center gap-1"
                           >
-                            📄 {t('approvals.viewSignedDocument')}: {signature.signed_document_name}
+                            ⬇️ {t('documents.download')}
                           </button>
+                          <span className="text-sm text-gray-600">{signature.signed_document_name}</span>
                         </div>
                       )}
                       {owner?.phone_for_contact && (
@@ -288,6 +302,15 @@ export default function Approvals() {
             );
           })}
         </div>
+      )}
+
+      {/* PDF Viewer Modal */}
+      {viewingDocument && (
+        <PDFViewer
+          documentId={viewingDocument.documentId}
+          filename={viewingDocument.filename}
+          onClose={() => setViewingDocument(null)}
+        />
       )}
     </div>
   );
