@@ -2,19 +2,22 @@
 Owners API endpoints with multi-unit support
 """
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from pydantic import BaseModel, EmailStr
 from uuid import UUID
 from datetime import datetime
+from pathlib import Path
 from app.core.database import get_db
+from app.core.config import settings
 from app.models.user import User
 from app.models.owner import Owner
 from app.models.unit import Unit
 from app.models.building import Building
 from app.api.dependencies import get_current_user
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/owners", tags=["owners"])
@@ -357,11 +360,16 @@ class OwnerStatusUpdateResponse(BaseModel):
 @router.put("/{owner_id}/status", response_model=OwnerStatusUpdateResponse)
 async def update_owner_status(
     owner_id: UUID,
-    status_data: OwnerStatusUpdate,
+    owner_status: str = Form(...),
+    notes: Optional[str] = Form(None),
+    signed_contract_file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Update owner status (agent only, with approval workflow for SIGN)"""
+    """Update owner status (agent only, with approval workflow for SIGN)
+    
+    When status is WAIT_FOR_SIGN, a signed contract PDF file is required.
+    """
     # Get owner
     owner = db.query(Owner).filter(
         Owner.owner_id == owner_id,
@@ -380,6 +388,14 @@ async def update_owner_status(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Unit not found"
+        )
+    
+    # Get building to access project_id
+    building = db.query(Building).filter(Building.building_id == unit.building_id).first()
+    if not building:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Building not found"
         )
     
     # Permission check: Agents can only update owners in buildings assigned to them
@@ -401,20 +417,88 @@ async def update_owner_status(
     restricted_statuses = ["SIGNED", "REFUSED"]
     
     if current_user.role == "AGENT":
-        if status_data.owner_status in restricted_statuses:
+        if owner_status in restricted_statuses:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Agents cannot set status to {status_data.owner_status}. Use WAIT_FOR_SIGN to request approval."
+                detail=f"Agents cannot set status to {owner_status}. Use WAIT_FOR_SIGN to request approval."
             )
-        if status_data.owner_status not in workflow_statuses:
+        if owner_status not in workflow_statuses:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid status for agent: {status_data.owner_status}"
+                detail=f"Invalid status for agent: {owner_status}"
             )
+    
+    # If setting to WAIT_FOR_SIGN, require signed contract file
+    signed_document_id = None
+    if owner_status == "WAIT_FOR_SIGN":
+        # Require file upload for WAIT_FOR_SIGN status
+        if not signed_contract_file:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Signed contract PDF file is required when setting status to WAIT_FOR_SIGN"
+            )
+        
+        # Validate file type (PDF only)
+        if signed_contract_file.content_type != "application/pdf":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Only PDF files are allowed for signed contracts"
+            )
+        
+        # Validate file size (10MB max)
+        max_size = 10 * 1024 * 1024
+        file_content = await signed_contract_file.read()
+        if len(file_content) > max_size:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File size exceeds 10MB limit"
+            )
+        
+        # Create storage directory if it doesn't exist
+        storage_path = Path(settings.STORAGE_PATH) / "documents"
+        storage_path.mkdir(parents=True, exist_ok=True)
+        
+        # Generate unique filename
+        file_uuid = uuid.uuid4()
+        file_extension = Path(signed_contract_file.filename).suffix or ".pdf"
+        file_path = storage_path / f"{file_uuid}{file_extension}"
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            buffer.write(file_content)
+        
+        # Create Document record for signed contract
+        from app.models.document import Document
+        signed_doc = Document(
+            owner_id=owner_id,
+            building_id=unit.building_id,
+            project_id=building.project_id,
+            document_type="SIGNED_CONTRACT",
+            file_name=signed_contract_file.filename,
+            file_path=str(file_path),
+            file_size_bytes=len(file_content),
+            mime_type=signed_contract_file.content_type,
+            description=f"Signed contract uploaded when owner status changed to WAIT_FOR_SIGN",
+            uploaded_by_user_id=current_user.user_id,
+        )
+        
+        db.add(signed_doc)
+        db.flush()  # Flush to get the document_id
+        signed_document_id = signed_doc.document_id
+        
+        logger.info(
+            "Signed contract uploaded for status change",
+            extra={
+                "owner_id": str(owner_id),
+                "document_id": str(signed_document_id),
+                "file_name": signed_contract_file.filename,
+                "user_id": str(current_user.user_id),
+            }
+        )
     
     # If setting to WAIT_FOR_SIGN or requesting SIGN, create approval task
     approval_task_id = None
-    if status_data.owner_status == "WAIT_FOR_SIGN":
+    if owner_status == "WAIT_FOR_SIGN":
         from app.services.task_creation import create_signature_approval_task
         from app.models.document import DocumentSignature, Document
         
@@ -437,6 +521,8 @@ async def update_owner_status(
                     # Create a placeholder document for status change workflow
                     document = Document(
                         owner_id=owner_id,
+                        building_id=unit.building_id,
+                        project_id=building.project_id,
                         document_type="CONTRACT",
                         file_name="Status Change Request",
                         file_path="",  # No file for status change
@@ -451,17 +537,22 @@ async def update_owner_status(
                 # Create DocumentSignature for status change workflow
                 # When agent changes status to WAIT_FOR_SIGN, they're requesting approval,
                 # so signature should be SIGNED_PENDING_APPROVAL (not WAIT_FOR_SIGN)
-                import uuid
                 from datetime import datetime
                 signature = DocumentSignature(
                     document_id=document.document_id,
                     owner_id=owner_id,
-                    signature_status="SIGNED_PENDING_APPROVAL",  # Changed from WAIT_FOR_SIGN
+                    signature_status="SIGNED_PENDING_APPROVAL",
                     signing_token=str(uuid.uuid4()),
                     signed_at=datetime.utcnow(),  # Set signed_at since agent is requesting approval
+                    signed_document_id=signed_document_id,  # Link to uploaded signed contract
                 )
                 db.add(signature)
                 db.flush()
+            else:
+                # Update existing signature with signed document if provided
+                if signed_document_id:
+                    signature.signed_document_id = signed_document_id
+                    db.flush()
             
             # Now create the approval task with signature_id
             approval_task = create_signature_approval_task(
@@ -491,8 +582,8 @@ async def update_owner_status(
     
     # Update owner status
     old_status = owner.owner_status
-    owner.owner_status = status_data.owner_status
-    if status_data.notes:
+    owner.owner_status = owner_status
+    if notes:
         # Store notes in owner record if needed (could add notes field to Owner model)
         pass
     
@@ -500,40 +591,39 @@ async def update_owner_status(
     db.refresh(owner)
     
     # Trigger cascade recalculation (unless status is WAIT_FOR_SIGN, which waits for approval)
-    if status_data.owner_status != "WAIT_FOR_SIGN":
+    if owner_status != "WAIT_FOR_SIGN":
         from app.services.unit_status import update_unit_status
         from app.services.majority import calculate_building_majority, calculate_project_majority
         
         try:
             update_unit_status(str(unit.unit_id), db)
             calculate_building_majority(str(unit.building_id), db)
-            
-            # Get project_id from building
-            building = db.query(Building).filter(Building.building_id == unit.building_id).first()
-            if building:
-                calculate_project_majority(str(building.project_id), db)
+            calculate_project_majority(str(building.project_id), db)
         except Exception as e:
             logger.error(f"Failed to recalculate progress: {e}")
             # Don't fail the request, just log the error
     
-    message = f"Owner status updated from {old_status} to {status_data.owner_status}"
+    message = f"Owner status updated from {old_status} to {owner_status}"
     if approval_task_id:
         message += ". Approval task created for manager review."
+    if signed_document_id:
+        message += " Signed contract uploaded."
     
     logger.info(
         "Owner status updated",
         extra={
             "owner_id": str(owner_id),
             "old_status": old_status,
-            "new_status": status_data.owner_status,
+            "new_status": owner_status,
             "user_id": str(current_user.user_id),
             "approval_task_id": approval_task_id,
+            "signed_document_id": str(signed_document_id) if signed_document_id else None,
         }
     )
     
     return OwnerStatusUpdateResponse(
         owner_id=str(owner_id),
-        owner_status=status_data.owner_status,
+        owner_status=owner_status,
         approval_task_id=approval_task_id,
         message=message
     )

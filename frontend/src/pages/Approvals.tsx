@@ -166,7 +166,10 @@ export default function Approvals() {
                           <button
                             onClick={async () => {
                               try {
-                                await documentsService.downloadDocument(signature.signed_document_id!);
+                                await documentsService.downloadDocument(
+                                  signature.signed_document_id!,
+                                  signature.signed_document_name!
+                                );
                               } catch (err) {
                                 console.error('Error downloading document:', err);
                                 alert('Failed to download document');

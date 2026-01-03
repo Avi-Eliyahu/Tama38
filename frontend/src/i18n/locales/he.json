@@ -167,7 +167,9 @@
     "pendingApproval": "אישור ממתין",
     "waitingForManagerApproval": "ממתין לאישור מנהל",
     "approvalTaskWillBeCreated": "תיווצר משימת אישור למנהלים לבדיקה ואישור בקשת החתימה הזו.",
-    "invalidStatusForAgent": "סוכנים יכולים להגדיר רק סטטוסי תהליך (NOT_CONTACTED, NEGOTIATING, AGREED_TO_SIGN, WAIT_FOR_SIGN)"
+    "invalidStatusForAgent": "סוכנים יכולים להגדיר רק סטטוסי תהליך (NOT_CONTACTED, NEGOTIATING, AGREED_TO_SIGN, WAIT_FOR_SIGN)",
+    "uploadSignedContract": "העלה חוזה חתום PDF",
+    "signedContractHint": "העלה את קובץ ה-PDF של החוזה החתום (נדרש, מקסימום 10MB)"
   },
   "ownerStatuses": {
     "NOT_CONTACTED": "לא יצר קשר",

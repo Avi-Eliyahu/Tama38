@@ -194,7 +194,10 @@ export default function Tasks() {
                             <button
                               onClick={async () => {
                                 try {
-                                  await documentsService.downloadDocument(task.signed_document_id!);
+                                  await documentsService.downloadDocument(
+                                    task.signed_document_id!,
+                                    task.signed_document_name!
+                                  );
                                 } catch (err) {
                                   console.error('Error downloading document:', err);
                                   alert('Failed to download document');

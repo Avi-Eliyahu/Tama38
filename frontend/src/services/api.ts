@@ -31,6 +31,10 @@ class ApiClient {
         }
         // Add request ID for logging
         config.headers['X-Request-ID'] = this.generateRequestId();
+        // If FormData is used, let axios set Content-Type automatically with boundary
+        if (config.data instanceof FormData) {
+          delete config.headers['Content-Type'];
+        }
         return config;
       },
       (error) => {

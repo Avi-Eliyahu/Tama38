@@ -17,6 +17,7 @@ export default function OwnerStatusChange({ owner, onStatusChange }: OwnerStatus
   const { t } = useTranslation();
   const [selectedStatus, setSelectedStatus] = useState(owner.owner_status);
   const [notes, setNotes] = useState('');
+  const [signedContractFile, setSignedContractFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -42,6 +43,30 @@ export default function OwnerStatusChange({ owner, onStatusChange }: OwnerStatus
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type (PDF only)
+      if (file.type !== 'application/pdf') {
+        setError('Only PDF files are allowed for signed contracts');
+        setSignedContractFile(null);
+        // Reset file input
+        e.target.value = '';
+        return;
+      }
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        setError('File size exceeds 10MB limit');
+        setSignedContractFile(null);
+        // Reset file input
+        e.target.value = '';
+        return;
+      }
+      setSignedContractFile(file);
+      setError(null);
+    }
+  };
+
   const handleStatusChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStatus || selectedStatus === owner.owner_status) {
@@ -54,12 +79,23 @@ export default function OwnerStatusChange({ owner, onStatusChange }: OwnerStatus
       return;
     }
 
+    // Require file upload when status is WAIT_FOR_SIGN
+    if (selectedStatus === 'WAIT_FOR_SIGN' && !signedContractFile) {
+      setError('Signed contract PDF file is required when setting status to WAIT_FOR_SIGN');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       setSuccess(null);
 
-      const result = await ownersService.updateOwnerStatus(owner.owner_id, selectedStatus, notes || undefined);
+      const result = await ownersService.updateOwnerStatus(
+        owner.owner_id,
+        selectedStatus,
+        notes || undefined,
+        selectedStatus === 'WAIT_FOR_SIGN' ? signedContractFile : undefined
+      );
       
       setSuccess(result.message);
       onStatusChange(selectedStatus);
@@ -73,6 +109,10 @@ export default function OwnerStatusChange({ owner, onStatusChange }: OwnerStatus
       setTimeout(() => {
         setSuccess(null);
         if (notes) setNotes('');
+        setSignedContractFile(null);
+        // Reset file input
+        const fileInput = document.getElementById('signed-contract-input') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
       }, 3000);
     } catch (err: any) {
       console.error('[OWNER_STATUS] Error updating status', err);
@@ -158,11 +198,37 @@ export default function OwnerStatusChange({ owner, onStatusChange }: OwnerStatus
         </div>
 
         {selectedStatus === 'WAIT_FOR_SIGN' && (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded">
-            <p className="text-sm text-blue-800">
-              {t('owners.approvalTaskWillBeCreated')}
-            </p>
-          </div>
+          <>
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+              <p className="text-sm text-blue-800">
+                {t('owners.approvalTaskWillBeCreated')}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('owners.uploadSignedContract')} *
+              </label>
+              <input
+                id="signed-contract-input"
+                type="file"
+                accept=".pdf"
+                onChange={handleFileChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={loading}
+                required={selectedStatus === 'WAIT_FOR_SIGN'}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {t('owners.signedContractHint')}
+              </p>
+              {signedContractFile && (
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                  <p className="text-sm text-green-800">
+                    ✓ {signedContractFile.name} ({(signedContractFile.size / 1024).toFixed(2)} KB)
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         <div>
@@ -193,7 +259,7 @@ export default function OwnerStatusChange({ owner, onStatusChange }: OwnerStatus
 
         <button
           type="submit"
-          disabled={loading || selectedStatus === owner.owner_status}
+          disabled={loading || selectedStatus === owner.owner_status || (selectedStatus === 'WAIT_FOR_SIGN' && !signedContractFile)}
           className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? t('common.updating') : t('owners.updateStatus')}

@@ -24,7 +24,8 @@
     "all": "All",
     "saving": "Saving...",
     "updating": "Updating...",
-    "optional": "Optional"
+    "optional": "Optional",
+    "submitting": "Submitting..."
   },
   "auth": {
     "login": "Login",
@@ -167,7 +168,9 @@
     "pendingApproval": "Pending Approval",
     "waitingForManagerApproval": "Waiting for manager approval",
     "approvalTaskWillBeCreated": "An approval task will be created for managers to review and approve this signature request.",
-    "invalidStatusForAgent": "Agents can only set workflow statuses (NOT_CONTACTED, NEGOTIATING, AGREED_TO_SIGN, WAIT_FOR_SIGN)"
+    "invalidStatusForAgent": "Agents can only set workflow statuses (NOT_CONTACTED, NEGOTIATING, AGREED_TO_SIGN, WAIT_FOR_SIGN)",
+    "uploadSignedContract": "Upload Signed Contract PDF",
+    "signedContractHint": "Upload the signed contract PDF file (required, max 10MB)"
   },
   "ownerStatuses": {
     "NOT_CONTACTED": "Not Contacted",
@@ -235,7 +238,10 @@
     "approvingSignature": "Approving Signature...",
     "signatureApproved": "Signature approved successfully",
     "managerReview": "Manager Review",
-    "approvalTask": "Approval Task"
+    "approvalTask": "Approval Task",
+    "linkedApproval": "Linked Approval",
+    "viewApproval": "View Approval",
+    "viewSignedDocument": "View Signed Document"
   },
   "approvals": {
     "title": "Approvals",
@@ -258,7 +264,15 @@
     "status": "Status",
     "signedDate": "Signed",
     "documentId": "Document ID",
-    "documentType": "Document Type"
+    "documentType": "Document Type",
+    "initiateSignature": "Initiate Signature",
+    "selectDocument": "Select Document",
+    "selectDocumentPlaceholder": "Choose a document to sign...",
+    "uploadSignedDocument": "Upload Signed Document",
+    "uploadSignedDocumentHint": "Upload a scanned/photographed copy of the signed document (PDF or image)",
+    "viewSignedDocument": "View Signed Document",
+    "linkedTask": "Linked Task",
+    "noSignableDocuments": "No signable documents available. Please upload a CONTRACT or SIGNATURE document first."
   },
   "alerts": {
     "title": "Alerts & Notifications",

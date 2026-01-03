@@ -47,6 +47,41 @@ class DocumentsService {
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }
+
+  async getDocumentDownloadUrl(documentId: string): Promise<string> {
+    const response = await apiClient.get<{ download_url: string }>(`/documents/${documentId}/download`);
+    return response.data.download_url;
+  }
+
+  async downloadDocument(documentId: string, filename?: string): Promise<void> {
+    // Get the document to get the filename if not provided
+    const doc = filename ? { file_name: filename } : await this.getDocument(documentId);
+    
+    // Fetch the file using axios with authentication and blob response type
+    // Use the files endpoint directly to get the file with proper auth headers
+    const response = await apiClient.get(`/files/${documentId}`, {
+      responseType: 'blob',
+    });
+    
+    // When responseType is 'blob', axios already returns a Blob
+    const blob = response.data as Blob;
+    
+    // Create a blob URL from the blob
+    const url = window.URL.createObjectURL(blob);
+    
+    // Create a temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = doc.file_name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Revoke the blob URL to free up memory (after a small delay to ensure download starts)
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+    }, 100);
+  }
 }
 
 export const documentsService = new DocumentsService();
