@@ -41,6 +41,11 @@ class BuildingResponse(BaseModel):
     signature_percentage: float
     traffic_light_status: str
     assigned_agent_id: Optional[str] = None
+    assigned_agent_name: Optional[str] = None
+    assigned_agent_email: Optional[str] = None
+    units_signed: Optional[int] = 0
+    units_partially_signed: Optional[int] = 0
+    units_not_signed: Optional[int] = 0
     created_at: datetime
     
     class Config:
@@ -71,6 +76,10 @@ async def list_buildings(
     
     buildings = query.offset(skip).limit(limit).all()
     
+    # Get agent details for all buildings
+    agent_ids = {b.assigned_agent_id for b in buildings if b.assigned_agent_id}
+    agents = {u.user_id: u for u in db.query(User).filter(User.user_id.in_(agent_ids)).all()} if agent_ids else {}
+    
     # Convert UUIDs to strings for response
     return [
         BuildingResponse(
@@ -85,6 +94,11 @@ async def list_buildings(
             signature_percentage=float(b.signature_percentage) if b.signature_percentage is not None else 0.0,
             traffic_light_status=b.traffic_light_status,
             assigned_agent_id=str(b.assigned_agent_id) if b.assigned_agent_id else None,
+            assigned_agent_name=agents[b.assigned_agent_id].full_name if b.assigned_agent_id and b.assigned_agent_id in agents else None,
+            assigned_agent_email=agents[b.assigned_agent_id].email if b.assigned_agent_id and b.assigned_agent_id in agents else None,
+            units_signed=b.units_signed or 0,
+            units_partially_signed=b.units_partially_signed or 0,
+            units_not_signed=b.units_not_signed or 0,
             created_at=b.created_at,
         )
         for b in buildings
@@ -134,6 +148,11 @@ async def create_building(
         }
     )
     
+    # Get agent details if assigned
+    assigned_agent = None
+    if building.assigned_agent_id:
+        assigned_agent = db.query(User).filter(User.user_id == building.assigned_agent_id).first()
+    
     # Convert UUIDs to strings for response
     return BuildingResponse(
         building_id=str(building.building_id),
@@ -144,9 +163,14 @@ async def create_building(
         floor_count=building.floor_count,
         total_units=building.total_units,
         current_status=building.current_status,
-        signature_percentage=float(building.signature_percentage),
+        signature_percentage=float(building.signature_percentage) if building.signature_percentage is not None else 0.0,
         traffic_light_status=building.traffic_light_status,
         assigned_agent_id=str(building.assigned_agent_id) if building.assigned_agent_id else None,
+        assigned_agent_name=assigned_agent.full_name if assigned_agent else None,
+        assigned_agent_email=assigned_agent.email if assigned_agent else None,
+        units_signed=building.units_signed or 0,
+        units_partially_signed=building.units_partially_signed or 0,
+        units_not_signed=building.units_not_signed or 0,
         created_at=building.created_at,
     )
 
@@ -169,6 +193,11 @@ async def get_building(
             detail="Building not found"
         )
     
+    # Get agent details if assigned
+    assigned_agent = None
+    if building.assigned_agent_id:
+        assigned_agent = db.query(User).filter(User.user_id == building.assigned_agent_id).first()
+    
     # Convert UUIDs to strings for response
     return BuildingResponse(
         building_id=str(building.building_id),
@@ -179,9 +208,14 @@ async def get_building(
         floor_count=building.floor_count,
         total_units=building.total_units,
         current_status=building.current_status,
-        signature_percentage=float(building.signature_percentage),
+        signature_percentage=float(building.signature_percentage) if building.signature_percentage is not None else 0.0,
         traffic_light_status=building.traffic_light_status,
         assigned_agent_id=str(building.assigned_agent_id) if building.assigned_agent_id else None,
+        assigned_agent_name=assigned_agent.full_name if assigned_agent else None,
+        assigned_agent_email=assigned_agent.email if assigned_agent else None,
+        units_signed=building.units_signed or 0,
+        units_partially_signed=building.units_partially_signed or 0,
+        units_not_signed=building.units_not_signed or 0,
         created_at=building.created_at,
     )
 
@@ -260,6 +294,11 @@ async def update_building(
         }
     )
     
+    # Get agent details if assigned
+    assigned_agent = None
+    if building.assigned_agent_id:
+        assigned_agent = db.query(User).filter(User.user_id == building.assigned_agent_id).first()
+    
     # Convert UUIDs to strings for response
     return BuildingResponse(
         building_id=str(building.building_id),
@@ -270,9 +309,14 @@ async def update_building(
         floor_count=building.floor_count,
         total_units=building.total_units,
         current_status=building.current_status,
-        signature_percentage=float(building.signature_percentage),
+        signature_percentage=float(building.signature_percentage) if building.signature_percentage is not None else 0.0,
         traffic_light_status=building.traffic_light_status,
         assigned_agent_id=str(building.assigned_agent_id) if building.assigned_agent_id else None,
+        assigned_agent_name=assigned_agent.full_name if assigned_agent else None,
+        assigned_agent_email=assigned_agent.email if assigned_agent else None,
+        units_signed=building.units_signed or 0,
+        units_partially_signed=building.units_partially_signed or 0,
+        units_not_signed=building.units_not_signed or 0,
         created_at=building.created_at,
     )
 

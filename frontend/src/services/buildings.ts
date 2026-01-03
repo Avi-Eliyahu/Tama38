@@ -12,6 +12,11 @@ export interface Building {
   signature_percentage: number;
   traffic_light_status: string;
   assigned_agent_id?: string;
+  assigned_agent_name?: string;
+  assigned_agent_email?: string;
+  units_signed?: number;
+  units_partially_signed?: number;
+  units_not_signed?: number;
   created_at: string;
 }
 
