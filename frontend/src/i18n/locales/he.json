@@ -169,18 +169,18 @@
     "approvalTaskWillBeCreated": "תיווצר משימת אישור למנהלים לבדיקה ואישור בקשת החתימה הזו.",
     "invalidStatusForAgent": "סוכנים יכולים להגדיר רק סטטוסי תהליך (NOT_CONTACTED, NEGOTIATING, AGREED_TO_SIGN, WAIT_FOR_SIGN)",
     "uploadSignedContract": "העלה חוזה חתום PDF",
-    "signedContractHint": "העלה את קובץ ה-PDF של החוזה החתום (נדרש, מקסימום 10MB)"
-  },
-  "ownerStatuses": {
-    "NOT_CONTACTED": "לא יצר קשר",
-    "PENDING_SIGNATURE": "חתימה ממתינה",
-    "NEGOTIATING": "מתמקח",
-    "AGREED_TO_SIGN": "הסכים לחתום",
-    "WAIT_FOR_SIGN": "ממתין לחתימה",
-    "SIGNED": "חתום",
-    "REFUSED": "סירב",
-    "DECEASED": "נפטר",
-    "INCAPACITATED": "חסר יכולת"
+    "signedContractHint": "העלה את קובץ ה-PDF של החוזה החתום (נדרש, מקסימום 10MB)",
+    "statusLabels": {
+      "NOT_CONTACTED": "לא יצר קשר",
+      "PENDING_SIGNATURE": "חתימה ממתינה",
+      "NEGOTIATING": "מתמקח",
+      "AGREED_TO_SIGN": "הסכים לחתום",
+      "WAIT_FOR_SIGN": "ממתין לחתימה",
+      "SIGNED": "חתום",
+      "REFUSED": "סירב",
+      "DECEASED": "נפטר",
+      "INCAPACITATED": "חסר יכולת"
+    }
   },
   "interactions": {
     "title": "אינטראקציות",
@@ -229,6 +229,7 @@
     "status": "סטטוס",
     "complete": "השלם",
     "markComplete": "סמן כמושלם",
+    "completed": "הושלם",
     "noTasks": "לא נמצאו משימות",
     "noOverdueTasks": "אין משימות מאוחרות",
     "allUpToDate": "מצוין! כל המשימות מעודכנות.",
@@ -237,7 +238,31 @@
     "approvingSignature": "מאשר חתימה...",
     "signatureApproved": "חתימה אושרה בהצלחה",
     "managerReview": "סקירת מנהל",
-    "approvalTask": "משימת אישור"
+    "approvalTask": "משימת אישור",
+    "linkedApproval": "אישור מקושר",
+    "viewApproval": "הצג אישור",
+    "priorityLabels": {
+      "HIGH": "גבוהה",
+      "MEDIUM": "בינונית",
+      "LOW": "נמוכה",
+      "CRITICAL": "קריטית"
+    },
+    "statusLabels": {
+      "NOT_STARTED": "לא התחיל",
+      "IN_PROGRESS": "בתהליך",
+      "BLOCKED": "חסום",
+      "COMPLETED": "הושלם",
+      "OVERDUE": "מאוחר",
+      "CANCELLED": "בוטל"
+    },
+    "taskTypeLabels": {
+      "FOLLOW_UP_CALL": "שיחת מעקב",
+      "SCHEDULE_MEETING": "תזמון פגישה",
+      "SEND_DOCUMENT": "שליחת מסמך",
+      "MANAGER_REVIEW": "סקירת מנהל",
+      "SITE_VISIT": "ביקור באתר",
+      "HANDLE_OBJECTION": "טיפול בהתנגדות"
+    }
   },
   "approvals": {
     "title": "אישורים",
@@ -300,5 +325,19 @@
     "download": "הורד",
     "viewFailed": "נכשל בהצגת המסמך",
     "downloadFailed": "נכשל בהורדת המסמך"
+  },
+  "units": {
+    "status": {
+      "title": "סטטוס חתימה",
+      "signed": "חתום",
+      "partiallySigned": "חתום חלקית",
+      "notSigned": "לא חתום",
+      "notContacted": "לא יצר קשר",
+      "negotiating": "מתמקח",
+      "agreedToSign": "הסכים לחתום",
+      "finalized": "הושלם",
+      "refused": "סירב",
+      "inactive": "לא פעיל"
+    }
   }
 }

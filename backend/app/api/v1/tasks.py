@@ -54,13 +54,18 @@ def build_task_response(task: Task, db: Session) -> TaskResponse:
     """Build TaskResponse with signature and document information"""
     signed_document_id = None
     signed_document_name = None
+    signature_id = None
     
-    # Get signature and signed document info if task has signature_id
-    if task.signature_id:
-        signature = db.query(DocumentSignature).filter(
-            DocumentSignature.signature_id == task.signature_id
-        ).first()
-        if signature and signature.signed_document_id:
+    # Get signature and signed document info if task is linked to a signature
+    # The relationship is: DocumentSignature.task_id -> Task.task_id (reverse lookup)
+    from app.models.document import DocumentSignature, Document
+    signature = db.query(DocumentSignature).filter(
+        DocumentSignature.task_id == task.task_id
+    ).first()
+    
+    if signature:
+        signature_id = str(signature.signature_id)
+        if signature.signed_document_id:
             signed_doc = db.query(Document).filter(
                 Document.document_id == signature.signed_document_id
             ).first()
@@ -72,7 +77,7 @@ def build_task_response(task: Task, db: Session) -> TaskResponse:
         task_id=str(task.task_id),
         building_id=str(task.building_id) if task.building_id else None,
         owner_id=str(task.owner_id) if task.owner_id else None,
-        signature_id=str(task.signature_id) if task.signature_id else None,
+        signature_id=signature_id,
         task_type=task.task_type,
         title=task.title,
         description=task.description,

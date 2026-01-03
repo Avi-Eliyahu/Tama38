@@ -170,18 +170,18 @@
     "approvalTaskWillBeCreated": "An approval task will be created for managers to review and approve this signature request.",
     "invalidStatusForAgent": "Agents can only set workflow statuses (NOT_CONTACTED, NEGOTIATING, AGREED_TO_SIGN, WAIT_FOR_SIGN)",
     "uploadSignedContract": "Upload Signed Contract PDF",
-    "signedContractHint": "Upload the signed contract PDF file (required, max 10MB)"
-  },
-  "ownerStatuses": {
-    "NOT_CONTACTED": "Not Contacted",
-    "PENDING_SIGNATURE": "Pending Signature",
-    "NEGOTIATING": "Negotiating",
-    "AGREED_TO_SIGN": "Agreed to Sign",
-    "WAIT_FOR_SIGN": "Wait for Sign",
-    "SIGNED": "Signed",
-    "REFUSED": "Refused",
-    "DECEASED": "Deceased",
-    "INCAPACITATED": "Incapacitated"
+    "signedContractHint": "Upload the signed contract PDF file (required, max 10MB)",
+    "statusLabels": {
+      "NOT_CONTACTED": "Not Contacted",
+      "PENDING_SIGNATURE": "Pending Signature",
+      "NEGOTIATING": "Negotiating",
+      "AGREED_TO_SIGN": "Agreed to Sign",
+      "WAIT_FOR_SIGN": "Wait for Sign",
+      "SIGNED": "Signed",
+      "REFUSED": "Refused",
+      "DECEASED": "Deceased",
+      "INCAPACITATED": "Incapacitated"
+    }
   },
   "interactions": {
     "title": "Interactions",
@@ -230,6 +230,7 @@
     "status": "Status",
     "complete": "Complete",
     "markComplete": "Mark Complete",
+    "completed": "Completed",
     "noTasks": "No tasks found",
     "noOverdueTasks": "No overdue tasks",
     "allUpToDate": "Great! All tasks are up to date.",
@@ -241,7 +242,29 @@
     "approvalTask": "Approval Task",
     "linkedApproval": "Linked Approval",
     "viewApproval": "View Approval",
-    "viewSignedDocument": "View Signed Document"
+    "viewSignedDocument": "View Signed Document",
+    "priorityLabels": {
+      "HIGH": "High",
+      "MEDIUM": "Medium",
+      "LOW": "Low",
+      "CRITICAL": "Critical"
+    },
+    "statusLabels": {
+      "NOT_STARTED": "Not Started",
+      "IN_PROGRESS": "In Progress",
+      "BLOCKED": "Blocked",
+      "COMPLETED": "Completed",
+      "OVERDUE": "Overdue",
+      "CANCELLED": "Cancelled"
+    },
+    "taskTypeLabels": {
+      "FOLLOW_UP_CALL": "Follow-up Call",
+      "SCHEDULE_MEETING": "Schedule Meeting",
+      "SEND_DOCUMENT": "Send Document",
+      "MANAGER_REVIEW": "Manager Review",
+      "SITE_VISIT": "Site Visit",
+      "HANDLE_OBJECTION": "Handle Objection"
+    }
   },
   "approvals": {
     "title": "Approvals",

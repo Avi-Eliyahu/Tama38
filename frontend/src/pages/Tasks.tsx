@@ -7,7 +7,8 @@ import { documentsService } from '../services/documents';
 import PDFViewer from '../components/PDFViewer';
 
 export default function Tasks() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'he';
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,8 +69,23 @@ export default function Tasks() {
       IN_PROGRESS: 'bg-blue-100 text-blue-800',
       COMPLETED: 'bg-green-100 text-green-800',
       CANCELLED: 'bg-gray-100 text-gray-800',
+      NOT_STARTED: 'bg-gray-100 text-gray-800',
+      BLOCKED: 'bg-red-100 text-red-800',
+      OVERDUE: 'bg-red-100 text-red-800',
     };
     return colors[status] || colors.PENDING;
+  };
+
+  const getPriorityLabel = (priority: string) => {
+    return t(`tasks.priorityLabels.${priority}`) || priority;
+  };
+
+  const getStatusLabel = (status: string) => {
+    return t(`tasks.statusLabels.${status}`) || status;
+  };
+
+  const getTaskTypeLabel = (taskType: string) => {
+    return t(`tasks.taskTypeLabels.${taskType}`) || taskType;
   };
 
   const isOverdue = (dueDate?: string) => {
@@ -86,9 +102,9 @@ export default function Tasks() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${isRTL ? 'text-right' : 'text-left'}`}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''} justify-between`}>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{t('tasks.title')}</h1>
           <p className="mt-1 text-sm text-gray-500">{t('tasks.subtitle')}</p>
@@ -97,7 +113,7 @@ export default function Tasks() {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex items-center gap-4">
+        <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''} gap-4`}>
           <button
             onClick={() => setFilter('my')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -159,19 +175,19 @@ export default function Tasks() {
                 isOverdue(task.due_date) ? 'border-red-300' : 'border-gray-200'
               } p-6`}
             >
-              <div className="flex items-start justify-between">
+              <div className={`flex items-start ${isRTL ? 'flex-row-reverse' : ''} justify-between`}>
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''} gap-3 mb-2`}>
                     <h3 className="text-lg font-semibold text-gray-900">{task.title}</h3>
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded ${getPriorityColor(task.priority)}`}
                     >
-                      {task.priority}
+                      {getPriorityLabel(task.priority)}
                     </span>
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(task.status)}`}
                     >
-                      {task.status}
+                      {getStatusLabel(task.status)}
                     </span>
                     {isOverdue(task.due_date) && (
                       <span className="px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-800">
@@ -184,7 +200,7 @@ export default function Tasks() {
                   )}
                   {task.task_type === 'MANAGER_REVIEW' && task.signature_id && (
                     <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="text-sm text-gray-700 space-y-1">
+                      <div className={`text-sm text-gray-700 space-y-1 ${isRTL ? 'text-right' : 'text-left'}`}>
                         <div>
                           {t('tasks.linkedApproval')}:{' '}
                           <Link to="/approvals" className="text-teal-600 hover:underline">
@@ -192,7 +208,7 @@ export default function Tasks() {
                           </Link>
                         </div>
                         {task.signed_document_id && task.signed_document_name && (
-                          <div className="flex items-center gap-2">
+                          <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''} gap-2`}>
                             <button
                               onClick={() => {
                                 setViewingDocument({
@@ -200,7 +216,7 @@ export default function Tasks() {
                                   filename: task.signed_document_name!
                                 });
                               }}
-                              className="px-3 py-1 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium flex items-center gap-1"
+                              className={`px-3 py-1 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium flex items-center ${isRTL ? 'flex-row-reverse' : ''} gap-1`}
                             >
                               👁️ {t('documents.view')}
                             </button>
@@ -213,10 +229,10 @@ export default function Tasks() {
                                   );
                                 } catch (err) {
                                   console.error('Error downloading document:', err);
-                                  alert('Failed to download document');
+                                  alert(t('documents.downloadFailed'));
                                 }
                               }}
-                              className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-medium flex items-center gap-1"
+                              className={`px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-medium flex items-center ${isRTL ? 'flex-row-reverse' : ''} gap-1`}
                             >
                               ⬇️ {t('documents.download')}
                             </button>
@@ -226,16 +242,16 @@ export default function Tasks() {
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span>{t('tasks.taskType')}: {task.task_type}</span>
+                  <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''} gap-4 text-sm text-gray-500`}>
+                    <span>{t('tasks.taskType')}: {getTaskTypeLabel(task.task_type)}</span>
                     {task.due_date && (
                       <span>
-                        {t('tasks.dueDate')}: {new Date(task.due_date).toLocaleDateString()}
+                        {t('tasks.dueDate')}: {new Date(task.due_date).toLocaleDateString(i18n.language === 'he' ? 'he-IL' : 'en-US')}
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className={`flex ${isRTL ? 'flex-row-reverse' : ''} gap-2`}>
                   {task.status !== 'COMPLETED' && task.task_type !== 'MANAGER_REVIEW' && (
                     <button
                       onClick={() => handleComplete(task.task_id)}
