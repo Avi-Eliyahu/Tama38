@@ -5,7 +5,8 @@ import { dashboardService, DashboardData } from '../services/dashboard';
 import { authService } from '../services/auth';
 
 export default function Dashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = ['he', 'ar'].includes(i18n.language);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,11 +19,21 @@ export default function Dashboard() {
     try {
       setLoading(true);
       setError(null);
-      const dashboardData = await dashboardService.getDashboardData();
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      );
+      const dashboardData = await Promise.race([
+        dashboardService.getDashboardData(),
+        timeoutPromise
+      ]) as DashboardData;
       setData(dashboardData);
     } catch (err: any) {
       console.error('[DASHBOARD] Error loading data', err);
-      setError(err.response?.data?.detail || t('common.error'));
+      const errorMessage = err.message === 'Request timeout' 
+        ? 'Request timed out. Please check your connection and try again.'
+        : err.response?.data?.detail || t('common.error');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -119,8 +130,8 @@ export default function Dashboard() {
             to={card.link}
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
+            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex-1 ${isRTL ? 'text-right' : ''}`}>
                 <p className="text-sm font-medium text-gray-600">{card.title}</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">{card.value}</p>
                 {card.change && (
