@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { tasksService, Task } from '../services/tasks';
 import { authService } from '../services/auth';
+import { documentsService } from '../services/documents';
 
 export default function Tasks() {
   const { t } = useTranslation();
@@ -45,20 +47,6 @@ export default function Tasks() {
     }
   };
 
-  const handleApproveSignature = async (taskId: string) => {
-    if (!window.confirm(t('tasks.approveSignature') + '?')) {
-      return;
-    }
-    try {
-      await tasksService.approveSignature(taskId);
-      setError(null);
-      loadTasks();
-      alert(t('tasks.signatureApproved'));
-    } catch (err: any) {
-      console.error('[TASKS] Error approving signature', err);
-      setError(err.response?.data?.detail || t('common.error'));
-    }
-  };
 
   const currentUser = authService.getCurrentUserSync();
   const isManager = currentUser?.role === 'PROJECT_MANAGER' || currentUser?.role === 'SUPER_ADMIN';
@@ -192,6 +180,35 @@ export default function Tasks() {
                   {task.description && (
                     <p className="text-sm text-gray-600 mb-3">{task.description}</p>
                   )}
+                  {task.task_type === 'MANAGER_REVIEW' && task.signature_id && (
+                    <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="text-sm text-gray-700 space-y-1">
+                        <div>
+                          {t('tasks.linkedApproval')}:{' '}
+                          <Link to="/approvals" className="text-teal-600 hover:underline">
+                            {t('tasks.viewApproval')}
+                          </Link>
+                        </div>
+                        {task.signed_document_id && task.signed_document_name && (
+                          <div>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await documentsService.downloadDocument(task.signed_document_id!);
+                                } catch (err) {
+                                  console.error('Error downloading document:', err);
+                                  alert('Failed to download document');
+                                }
+                              }}
+                              className="text-teal-600 hover:text-teal-700 hover:underline flex items-center gap-1"
+                            >
+                              📄 {t('tasks.viewSignedDocument')}: {task.signed_document_name}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <span>{t('tasks.taskType')}: {task.task_type}</span>
                     {task.due_date && (
@@ -202,21 +219,18 @@ export default function Tasks() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  {task.status !== 'COMPLETED' && task.task_type === 'MANAGER_REVIEW' && task.owner_id && isManager && (
-                    <button
-                      onClick={() => handleApproveSignature(task.task_id)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-                    >
-                      {t('tasks.approveSignature')}
-                    </button>
-                  )}
-                  {task.status !== 'COMPLETED' && (
+                  {task.status !== 'COMPLETED' && task.task_type !== 'MANAGER_REVIEW' && (
                     <button
                       onClick={() => handleComplete(task.task_id)}
                       className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
                     >
                       {t('tasks.markComplete')}
                     </button>
+                  )}
+                  {task.status === 'COMPLETED' && task.task_type === 'MANAGER_REVIEW' && (
+                    <span className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium">
+                      {t('tasks.completed')}
+                    </span>
                   )}
                 </div>
               </div>

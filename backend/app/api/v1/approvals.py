@@ -2,13 +2,15 @@
 Approval Workflow API endpoints
 """
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from pydantic import BaseModel
 from uuid import UUID
 from datetime import datetime
+from pathlib import Path
 from app.core.database import get_db
+from app.core.config import settings
 from app.models.user import User
 from app.models.document import DocumentSignature, Document
 from app.models.owner import Owner
@@ -31,7 +33,7 @@ class SignatureSign(BaseModel):
 
 
 class ApprovalRequest(BaseModel):
-    reason: str  # Required for approval
+    reason: Optional[str] = None  # Optional for approval, required for rejection
 
 
 class SignatureResponse(BaseModel):
@@ -43,6 +45,9 @@ class SignatureResponse(BaseModel):
     signed_at: Optional[datetime]
     approved_at: Optional[datetime]
     created_at: datetime
+    task_id: Optional[str] = None
+    signed_document_id: Optional[str] = None
+    signed_document_name: Optional[str] = None
     
     class Config:
         from_attributes = True
@@ -62,14 +67,19 @@ class SigningTokenInfo(BaseModel):
 
 @router.post("/signatures/initiate", response_model=SignatureResponse, status_code=status.HTTP_201_CREATED)
 async def initiate_signature(
-    signature_data: SignatureInitiate,
+    owner_id: str = Form(...),
+    document_id: str = Form(...),
+    signed_document: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Initiate signing process (creates signature with WAIT_FOR_SIGN status)"""
+    """Initiate signing process (creates signature with WAIT_FOR_SIGN status)
+    
+    Optionally accepts a signed document file upload for manual/paper signatures.
+    """
     # Verify owner exists
     owner = db.query(Owner).filter(
-        Owner.owner_id == signature_data.owner_id,
+        Owner.owner_id == UUID(owner_id),
         Owner.is_deleted == False
     ).first()
     
@@ -79,21 +89,103 @@ async def initiate_signature(
             detail="Owner not found"
         )
     
+    # Handle signed document upload if provided
+    signed_document_id = None
+    signed_document_name = None
+    if signed_document:
+        # Validate file type and size
+        allowed_types = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
+        if signed_document.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File type not allowed. Allowed types: {allowed_types}"
+            )
+        
+        # Max file size: 10MB
+        max_size = 10 * 1024 * 1024
+        file_content = await signed_document.read()
+        if len(file_content) > max_size:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File size exceeds 10MB limit"
+            )
+        
+        # Create storage directory if it doesn't exist
+        storage_path = Path(settings.STORAGE_PATH) / "documents"
+        storage_path.mkdir(parents=True, exist_ok=True)
+        
+        # Generate unique filename
+        file_uuid = uuid.uuid4()
+        file_extension = Path(signed_document.filename).suffix
+        file_path = storage_path / f"{file_uuid}{file_extension}"
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            buffer.write(file_content)
+        
+        # Create Document record for signed document
+        signed_doc = Document(
+            owner_id=UUID(owner_id),
+            document_type='SIGNED_CONTRACT',
+            file_name=signed_document.filename,
+            file_path=str(file_path),
+            file_size_bytes=len(file_content),
+            mime_type=signed_document.content_type,
+            description=f"Signed document uploaded by agent for signature initiation",
+            uploaded_by_user_id=current_user.user_id,
+        )
+        
+        db.add(signed_doc)
+        db.flush()  # Flush to get the document_id
+        signed_document_id = signed_doc.document_id
+        signed_document_name = signed_doc.file_name
+        
+        logger.info(
+            "Signed document uploaded",
+            extra={
+                "document_id": str(signed_document_id),
+                "file_name": signed_document.filename,
+                "user_id": str(current_user.user_id),
+            }
+        )
+    
     # Generate signing token
     signing_token = str(uuid.uuid4())
     
     signature = DocumentSignature(
-        document_id=UUID(signature_data.document_id),
-        owner_id=UUID(signature_data.owner_id),
+        document_id=UUID(document_id),
+        owner_id=UUID(owner_id),
         signature_status="WAIT_FOR_SIGN",
         signing_token=signing_token,
+        signed_document_id=signed_document_id,
     )
     
     db.add(signature)
+    db.flush()  # Flush to get signature_id
     
     # Update owner status
     owner.owner_status = "WAIT_FOR_SIGN"
     owner.signature_session_id = signature.signature_id
+    
+    # Create approval task and link bidirectionally
+    from app.models.unit import Unit
+    from app.services.task_creation import create_signature_approval_task
+    
+    unit = db.query(Unit).filter(Unit.unit_id == owner.unit_id).first()
+    if unit:
+        try:
+            task = create_signature_approval_task(
+                owner_id=UUID(owner_id),
+                building_id=unit.building_id,
+                requested_by_agent_id=current_user.user_id,
+                signature_id=signature.signature_id,
+                db=db
+            )
+            # Link signature to task (bidirectional)
+            signature.task_id = task.task_id
+        except Exception as e:
+            logger.error(f"Failed to create approval task: {e}")
+            # Continue without task - signature is still created
     
     db.commit()
     db.refresh(signature)
@@ -104,6 +196,8 @@ async def initiate_signature(
             "signature_id": str(signature.signature_id),
             "owner_id": str(signature.owner_id),
             "document_id": str(signature.document_id),
+            "signed_document_id": str(signed_document_id) if signed_document_id else None,
+            "task_id": str(signature.task_id) if signature.task_id else None,
         }
     )
     
@@ -117,6 +211,9 @@ async def initiate_signature(
         signed_at=signature.signed_at,
         approved_at=signature.approved_at,
         created_at=signature.created_at,
+        task_id=str(signature.task_id) if signature.task_id else None,
+        signed_document_id=str(signature.signed_document_id) if signature.signed_document_id else None,
+        signed_document_name=signed_document_name,
     )
 
 
@@ -277,6 +374,13 @@ async def get_approval_queue(
         DocumentSignature.signature_status == "SIGNED_PENDING_APPROVAL"
     ).order_by(desc(DocumentSignature.signed_at)).offset(skip).limit(limit).all()
     
+    # Get signed document names for signatures that have signed_document_id
+    signed_doc_map = {}
+    signed_doc_ids = [s.signed_document_id for s in signatures if s.signed_document_id]
+    if signed_doc_ids:
+        signed_docs = db.query(Document).filter(Document.document_id.in_(signed_doc_ids)).all()
+        signed_doc_map = {str(doc.document_id): doc.file_name for doc in signed_docs}
+    
     # Convert UUIDs to strings for response
     return [
         SignatureResponse(
@@ -288,6 +392,9 @@ async def get_approval_queue(
             signed_at=s.signed_at,
             approved_at=s.approved_at,
             created_at=s.created_at,
+            task_id=str(s.task_id) if s.task_id else None,
+            signed_document_id=str(s.signed_document_id) if s.signed_document_id else None,
+            signed_document_name=signed_doc_map.get(str(s.signed_document_id)) if s.signed_document_id else None,
         )
         for s in signatures
     ]
@@ -301,12 +408,7 @@ async def approve_signature(
     current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
 ):
     """Manager approves signature (changes status to FINALIZED)"""
-    if not approval_data.reason or len(approval_data.reason.strip()) < 20:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Approval reason is required and must be at least 20 characters"
-        )
-    
+    # Reason is optional for approval
     signature = db.query(DocumentSignature).filter(
         DocumentSignature.signature_id == signature_id
     ).first()
@@ -327,7 +429,17 @@ async def approve_signature(
     signature.signature_status = "FINALIZED"
     signature.approved_by_user_id = current_user.user_id
     signature.approved_at = datetime.utcnow()
-    signature.approval_reason = approval_data.reason
+    signature.approval_reason = approval_data.reason if approval_data.reason else None
+    
+    # Mark linked task as completed if exists
+    if signature.task_id:
+        from app.models.task import Task
+        task = db.query(Task).filter(Task.task_id == signature.task_id).first()
+        if task:
+            task.status = "COMPLETED"
+            task.completed_at = datetime.utcnow()
+            if approval_data.reason:
+                task.notes = (task.notes or "") + f"\n[Approval Notes]: {approval_data.reason}"
     
     # Update owner status
     owner = db.query(Owner).filter(Owner.owner_id == signature.owner_id).first()
@@ -361,7 +473,8 @@ async def approve_signature(
         extra={
             "signature_id": str(signature.signature_id),
             "approved_by": str(current_user.user_id),
-            "reason": approval_data.reason[:50],
+            "reason": approval_data.reason[:50] if approval_data.reason else None,
+            "task_id": str(signature.task_id) if signature.task_id else None,
         }
     )
     
@@ -387,6 +500,13 @@ async def reject_signature(
     current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
 ):
     """Manager rejects signature (returns to WAIT_FOR_SIGN)"""
+    # Reason is required for rejection
+    if not rejection_data.reason or len(rejection_data.reason.strip()) < 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Rejection reason is required and must be at least 10 characters"
+        )
+    
     signature = db.query(DocumentSignature).filter(
         DocumentSignature.signature_id == signature_id
     ).first()
@@ -402,6 +522,15 @@ async def reject_signature(
     signature.rejected_at = datetime.utcnow()
     signature.rejection_reason = rejection_data.reason
     
+    # Mark linked task as completed if exists
+    if signature.task_id:
+        from app.models.task import Task
+        task = db.query(Task).filter(Task.task_id == signature.task_id).first()
+        if task:
+            task.status = "COMPLETED"
+            task.completed_at = datetime.utcnow()
+            task.notes = (task.notes or "") + f"\n[Rejection Notes]: {rejection_data.reason}"
+    
     # Update owner status
     owner = db.query(Owner).filter(Owner.owner_id == signature.owner_id).first()
     if owner:
@@ -409,6 +538,13 @@ async def reject_signature(
     
     db.commit()
     db.refresh(signature)
+    
+    # Get signed document name if exists
+    signed_document_name = None
+    if signature.signed_document_id:
+        signed_doc = db.query(Document).filter(Document.document_id == signature.signed_document_id).first()
+        if signed_doc:
+            signed_document_name = signed_doc.file_name
     
     # Convert UUIDs to strings for response
     return SignatureResponse(
@@ -420,5 +556,8 @@ async def reject_signature(
         signed_at=signature.signed_at,
         approved_at=signature.approved_at,
         created_at=signature.created_at,
+        task_id=str(signature.task_id) if signature.task_id else None,
+        signed_document_id=str(signature.signed_document_id) if signature.signed_document_id else None,
+        signed_document_name=signed_document_name,
     )
 

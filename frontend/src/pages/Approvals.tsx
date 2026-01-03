@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { approvalsService, Signature } from '../services/approvals';
 import { ownersService, Owner } from '../services/owners';
+import { documentsService } from '../services/documents';
 
 export default function Approvals() {
   const { t } = useTranslation();
@@ -43,15 +45,11 @@ export default function Approvals() {
   };
 
   const handleApprove = async (signatureId: string) => {
-    if (!approvalReason.trim()) {
-      setError(t('approvals.reasonRequired'));
-      return;
-    }
-
+    // Reason is optional for approval
     try {
       setLoading(true);
       setError(null);
-      await approvalsService.approveSignature(signatureId, approvalReason);
+      await approvalsService.approveSignature(signatureId, approvalReason || '');
       setApprovingId(null);
       setApprovalReason('');
       loadApprovals();
@@ -155,6 +153,31 @@ export default function Approvals() {
                       {signature.signed_at && (
                         <div>{t('approvals.signedDate')}: {new Date(signature.signed_at).toLocaleString()}</div>
                       )}
+                      {signature.task_id && (
+                        <div>
+                          {t('approvals.linkedTask')}:{' '}
+                          <Link to={`/tasks`} className="text-teal-600 hover:underline">
+                            {signature.task_id.substring(0, 8)}...
+                          </Link>
+                        </div>
+                      )}
+                      {signature.signed_document_id && signature.signed_document_name && (
+                        <div className="mt-2">
+                          <button
+                            onClick={async () => {
+                              try {
+                                await documentsService.downloadDocument(signature.signed_document_id!);
+                              } catch (err) {
+                                console.error('Error downloading document:', err);
+                                alert('Failed to download document');
+                              }
+                            }}
+                            className="text-teal-600 hover:text-teal-700 hover:underline flex items-center gap-1"
+                          >
+                            📄 {t('approvals.viewSignedDocument')}: {signature.signed_document_name}
+                          </button>
+                        </div>
+                      )}
                       {owner?.phone_for_contact && (
                         <div>{t('owners.phone')}: {owner.phone_for_contact}</div>
                       )}
@@ -169,15 +192,14 @@ export default function Approvals() {
                       <div className="space-y-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Approval Reason *
+                            {t('approvals.approvalReason')} ({t('common.optional')})
                           </label>
                           <textarea
                             value={approvalReason}
                             onChange={(e) => setApprovalReason(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
                             rows={3}
-                            placeholder="Enter reason for approval..."
-                            required
+                            placeholder={t('approvals.reasonPlaceholder')}
                           />
                         </div>
                         <div className="flex justify-end gap-3">
@@ -188,11 +210,11 @@ export default function Approvals() {
                             }}
                             className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
                           >
-                            Cancel
+                            {t('common.cancel')}
                           </button>
                           <button
                             onClick={() => handleApprove(signature.signature_id)}
-                            disabled={loading || !approvalReason.trim()}
+                            disabled={loading}
                             className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                           >
                             {loading ? t('approvals.approving') : t('approvals.approve')}

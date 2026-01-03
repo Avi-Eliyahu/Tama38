@@ -11,6 +11,7 @@ from datetime import datetime, date
 from app.core.database import get_db
 from app.models.user import User
 from app.models.task import Task
+from app.models.document import DocumentSignature, Document
 from app.api.dependencies import get_current_user, require_role
 import logging
 
@@ -33,6 +34,7 @@ class TaskResponse(BaseModel):
     task_id: str
     building_id: Optional[str]
     owner_id: Optional[str]
+    signature_id: Optional[str] = None
     task_type: str
     title: str
     description: Optional[str]
@@ -41,9 +43,47 @@ class TaskResponse(BaseModel):
     status: str
     priority: str
     created_at: datetime
+    signed_document_id: Optional[str] = None
+    signed_document_name: Optional[str] = None
     
     class Config:
         from_attributes = True
+
+
+def build_task_response(task: Task, db: Session) -> TaskResponse:
+    """Build TaskResponse with signature and document information"""
+    signed_document_id = None
+    signed_document_name = None
+    
+    # Get signature and signed document info if task has signature_id
+    if task.signature_id:
+        signature = db.query(DocumentSignature).filter(
+            DocumentSignature.signature_id == task.signature_id
+        ).first()
+        if signature and signature.signed_document_id:
+            signed_doc = db.query(Document).filter(
+                Document.document_id == signature.signed_document_id
+            ).first()
+            if signed_doc:
+                signed_document_id = str(signed_doc.document_id)
+                signed_document_name = signed_doc.file_name
+    
+    return TaskResponse(
+        task_id=str(task.task_id),
+        building_id=str(task.building_id) if task.building_id else None,
+        owner_id=str(task.owner_id) if task.owner_id else None,
+        signature_id=str(task.signature_id) if task.signature_id else None,
+        task_type=task.task_type,
+        title=task.title,
+        description=task.description,
+        assigned_to_agent_id=str(task.assigned_to_agent_id),
+        due_date=task.due_date,
+        status=task.status,
+        priority=task.priority,
+        created_at=task.created_at,
+        signed_document_id=signed_document_id,
+        signed_document_name=signed_document_name,
+    )
 
 
 @router.post("", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
@@ -79,19 +119,7 @@ async def create_task(
     )
     
     # Convert UUIDs to strings for response
-    return TaskResponse(
-        task_id=str(task.task_id),
-        building_id=str(task.building_id) if task.building_id else None,
-        owner_id=str(task.owner_id) if task.owner_id else None,
-        task_type=task.task_type,
-        title=task.title,
-        description=task.description,
-        assigned_to_agent_id=str(task.assigned_to_agent_id),
-        due_date=task.due_date,
-        status=task.status,
-        priority=task.priority,
-        created_at=task.created_at,
-    )
+    return build_task_response(task, db)
 
 
 @router.get("", response_model=List[TaskResponse])
@@ -117,22 +145,7 @@ async def list_tasks(
     
     tasks = query.order_by(desc(Task.created_at)).offset(skip).limit(limit).all()
     # Convert UUIDs to strings for response
-    return [
-        TaskResponse(
-            task_id=str(t.task_id),
-            building_id=str(t.building_id) if t.building_id else None,
-            owner_id=str(t.owner_id) if t.owner_id else None,
-            task_type=t.task_type,
-            title=t.title,
-            description=t.description,
-            assigned_to_agent_id=str(t.assigned_to_agent_id),
-            due_date=t.due_date,
-            status=t.status,
-            priority=t.priority,
-            created_at=t.created_at,
-        )
-        for t in tasks
-    ]
+    return [build_task_response(t, db) for t in tasks]
 
 
 @router.get("/my-tasks", response_model=List[TaskResponse])
@@ -149,22 +162,7 @@ async def get_my_tasks(
     
     tasks = query.order_by(desc(Task.created_at)).all()
     # Convert UUIDs to strings for response
-    return [
-        TaskResponse(
-            task_id=str(t.task_id),
-            building_id=str(t.building_id) if t.building_id else None,
-            owner_id=str(t.owner_id) if t.owner_id else None,
-            task_type=t.task_type,
-            title=t.title,
-            description=t.description,
-            assigned_to_agent_id=str(t.assigned_to_agent_id),
-            due_date=t.due_date,
-            status=t.status,
-            priority=t.priority,
-            created_at=t.created_at,
-        )
-        for t in tasks
-    ]
+    return [build_task_response(t, db) for t in tasks]
 
 
 @router.get("/overdue", response_model=List[TaskResponse])
@@ -186,22 +184,7 @@ async def get_overdue_tasks(
     
     tasks = query.order_by(Task.due_date).all()
     # Convert UUIDs to strings for response
-    return [
-        TaskResponse(
-            task_id=str(t.task_id),
-            building_id=str(t.building_id) if t.building_id else None,
-            owner_id=str(t.owner_id) if t.owner_id else None,
-            task_type=t.task_type,
-            title=t.title,
-            description=t.description,
-            assigned_to_agent_id=str(t.assigned_to_agent_id),
-            due_date=t.due_date,
-            status=t.status,
-            priority=t.priority,
-            created_at=t.created_at,
-        )
-        for t in tasks
-    ]
+    return [build_task_response(t, db) for t in tasks]
 
 
 @router.put("/{task_id}/complete", response_model=TaskResponse)
@@ -237,19 +220,7 @@ async def complete_task(
     db.refresh(task)
     
     # Convert UUIDs to strings for response
-    return TaskResponse(
-        task_id=str(task.task_id),
-        building_id=str(task.building_id) if task.building_id else None,
-        owner_id=str(task.owner_id) if task.owner_id else None,
-        task_type=task.task_type,
-        title=task.title,
-        description=task.description,
-        assigned_to_agent_id=str(task.assigned_to_agent_id),
-        due_date=task.due_date,
-        status=task.status,
-        priority=task.priority,
-        created_at=task.created_at,
-    )
+    return build_task_response(task, db)
 
 
 class SignatureApprovalRequest(BaseModel):
@@ -335,77 +306,16 @@ async def approve_signature(
     from app.models.building import Building
     from app.services.unit_status import update_unit_status
     from app.services.majority import calculate_building_majority, calculate_project_majority
-    import json
-    import time
-    log_path = r'c:\projects\pinoy\.cursor\debug.log'
-    
-    # #region agent log
-    try:
-        with open(log_path, 'a', encoding='utf-8') as f:
-            f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:333","message":"starting cascade recalculation","data":{"owner_id":str(task.owner_id),"owner_status":owner.owner_status,"unit_id":str(owner.unit_id)},"timestamp":int(time.time()*1000)})+'\n')
-    except: pass
-    # #endregion
     
     unit = db.query(Unit).filter(Unit.unit_id == owner.unit_id).first()
     if unit:
         try:
-            # #region agent log
-            try:
-                with open(log_path, 'a', encoding='utf-8') as f:
-                    f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:342","message":"calling update_unit_status","data":{"unit_id":str(unit.unit_id),"building_id":str(unit.building_id)},"timestamp":int(time.time()*1000)})+'\n')
-            except: pass
-            # #endregion
-            
             updated_status = update_unit_status(str(unit.unit_id), db)
-            
-            # #region agent log
-            try:
-                with open(log_path, 'a', encoding='utf-8') as f:
-                    f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:347","message":"unit status updated","data":{"unit_id":str(unit.unit_id),"updated_status":updated_status},"timestamp":int(time.time()*1000)})+'\n')
-            except: pass
-            # #endregion
-            
-            # #region agent log
-            try:
-                with open(log_path, 'a', encoding='utf-8') as f:
-                    f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:350","message":"calling calculate_building_majority","data":{"building_id":str(unit.building_id)},"timestamp":int(time.time()*1000)})+'\n')
-            except: pass
-            # #endregion
-            
             building_result = calculate_building_majority(str(unit.building_id), db)
-            
-            # #region agent log
-            try:
-                with open(log_path, 'a', encoding='utf-8') as f:
-                    f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:355","message":"building majority calculated","data":{"building_id":str(unit.building_id),"signature_percentage":building_result.get("signature_percentage"),"units_signed":building_result.get("units_signed")},"timestamp":int(time.time()*1000)})+'\n')
-            except: pass
-            # #endregion
-            
             building = db.query(Building).filter(Building.building_id == unit.building_id).first()
             if building:
-                # #region agent log
-                try:
-                    with open(log_path, 'a', encoding='utf-8') as f:
-                        f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:361","message":"calling calculate_project_majority","data":{"project_id":str(building.project_id)},"timestamp":int(time.time()*1000)})+'\n')
-                except: pass
-                # #endregion
-                
                 project_result = calculate_project_majority(str(building.project_id), db)
-                
-                # #region agent log
-                try:
-                    with open(log_path, 'a', encoding='utf-8') as f:
-                        f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B","location":"tasks.py:366","message":"project majority calculated","data":{"project_id":str(building.project_id),"signature_percentage":project_result.get("signature_percentage"),"units_signed":project_result.get("units_signed")},"timestamp":int(time.time()*1000)})+'\n')
-                except: pass
-                # #endregion
         except Exception as e:
-            # #region agent log
-            try:
-                import traceback
-                with open(log_path, 'a', encoding='utf-8') as f:
-                    f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"tasks.py:372","message":"cascade recalculation error","data":{"error":str(e),"traceback":traceback.format_exc()},"timestamp":int(time.time()*1000)})+'\n')
-            except: pass
-            # #endregion
             logger.error(f"Failed to recalculate progress after signature approval: {e}")
             # Don't fail the request, just log
     

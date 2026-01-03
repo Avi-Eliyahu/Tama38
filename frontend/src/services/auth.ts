@@ -2,6 +2,7 @@
  * Authentication Service
  */
 import { apiClient } from './api';
+import axios from 'axios';
 
 export interface LoginCredentials {
   email: string;
@@ -91,7 +92,15 @@ class AuthService {
     }
 
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/refresh', {
+      // Temporarily remove token from apiClient to avoid infinite loop
+      const tempClient = axios.create({
+        baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1`,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const response = await tempClient.post<AuthResponse>('/auth/refresh', {
         refresh_token: this.refreshToken,
       });
       
@@ -99,7 +108,7 @@ class AuthService {
       return response.data.access_token;
     } catch (error) {
       console.error('[AUTH] Token refresh failed', error);
-      this.logout();
+      // Don't auto-logout, just throw error
       throw error;
     }
   }

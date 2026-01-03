@@ -416,27 +416,77 @@ async def update_owner_status(
     approval_task_id = None
     if status_data.owner_status == "WAIT_FOR_SIGN":
         from app.services.task_creation import create_signature_approval_task
+        from app.models.document import DocumentSignature, Document
+        
         try:
+            # First, check if a DocumentSignature exists for this owner with pending approval
+            # If not, create one (for status change workflow)
+            signature = db.query(DocumentSignature).filter(
+                DocumentSignature.owner_id == owner_id,
+                DocumentSignature.signature_status == "SIGNED_PENDING_APPROVAL"
+            ).first()
+            
+            if not signature:
+                # Find or create a document for this owner (use first CONTRACT document or create placeholder)
+                document = db.query(Document).filter(
+                    Document.owner_id == owner_id,
+                    Document.document_type == "CONTRACT"
+                ).first()
+                
+                if not document:
+                    # Create a placeholder document for status change workflow
+                    document = Document(
+                        owner_id=owner_id,
+                        document_type="CONTRACT",
+                        file_name="Status Change Request",
+                        file_path="",  # No file for status change
+                        file_size_bytes=0,
+                        mime_type="application/pdf",
+                        description=f"Placeholder document created for owner status change to WAIT_FOR_SIGN",
+                        uploaded_by_user_id=current_user.user_id,
+                    )
+                    db.add(document)
+                    db.flush()
+                
+                # Create DocumentSignature for status change workflow
+                # When agent changes status to WAIT_FOR_SIGN, they're requesting approval,
+                # so signature should be SIGNED_PENDING_APPROVAL (not WAIT_FOR_SIGN)
+                import uuid
+                from datetime import datetime
+                signature = DocumentSignature(
+                    document_id=document.document_id,
+                    owner_id=owner_id,
+                    signature_status="SIGNED_PENDING_APPROVAL",  # Changed from WAIT_FOR_SIGN
+                    signing_token=str(uuid.uuid4()),
+                    signed_at=datetime.utcnow(),  # Set signed_at since agent is requesting approval
+                )
+                db.add(signature)
+                db.flush()
+            
+            # Now create the approval task with signature_id
             approval_task = create_signature_approval_task(
                 owner_id=owner_id,
                 building_id=unit.building_id,
                 requested_by_agent_id=current_user.user_id,
+                signature_id=signature.signature_id,
                 db=db
             )
             approval_task_id = str(approval_task.task_id)
+            
             logger.info(
                 "Approval task created for owner status change",
                 extra={
                     "owner_id": str(owner_id),
                     "task_id": approval_task_id,
+                    "signature_id": str(signature.signature_id),
                     "requested_by": str(current_user.user_id),
                 }
             )
         except Exception as e:
-            logger.error(f"Failed to create approval task: {e}")
+            logger.error(f"Failed to create approval task: {e}", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create approval task"
+                detail=f"Failed to create approval task: {str(e)}"
             )
     
     # Update owner status
