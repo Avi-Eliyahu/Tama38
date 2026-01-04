@@ -503,12 +503,12 @@ async def update_owner_status(
         from app.models.document import DocumentSignature, Document
         
         try:
-            # First, check if a DocumentSignature exists for this owner with pending approval
-            # If not, create one (for status change workflow)
+            # First, check if a DocumentSignature exists for this owner
+            # Look for either pending approval or wait for sign status
             signature = db.query(DocumentSignature).filter(
                 DocumentSignature.owner_id == owner_id,
-                DocumentSignature.signature_status == "SIGNED_PENDING_APPROVAL"
-            ).first()
+                DocumentSignature.signature_status.in_(["SIGNED_PENDING_APPROVAL", "WAIT_FOR_SIGN"])
+            ).order_by(DocumentSignature.created_at.desc()).first()
             
             if not signature:
                 # Find or create a document for this owner (use first CONTRACT document or create placeholder)
@@ -535,14 +535,15 @@ async def update_owner_status(
                     db.flush()
                 
                 # Create DocumentSignature for status change workflow
-                # When agent changes status to WAIT_FOR_SIGN, they want the owner to sign,
-                # so signature status should be WAIT_FOR_SIGN (not SIGNED_PENDING_APPROVAL)
+                # If signed_document_id is provided, owner has already signed - needs manager approval
+                # If not provided, we're waiting for owner to sign
+                signature_status = "SIGNED_PENDING_APPROVAL" if signed_document_id else "WAIT_FOR_SIGN"
                 signature = DocumentSignature(
                     document_id=document.document_id,
                     owner_id=owner_id,
-                    signature_status="WAIT_FOR_SIGN",
+                    signature_status=signature_status,
                     signing_token=str(uuid.uuid4()),
-                    # Don't set signed_at - no signature has occurred yet
+                    signed_at=datetime.utcnow() if signed_document_id else None,  # Set signed_at if document provided
                     signed_document_id=signed_document_id,  # Link to uploaded signed contract
                 )
                 db.add(signature)
@@ -551,30 +552,43 @@ async def update_owner_status(
                 # Update existing signature with signed document if provided
                 if signed_document_id:
                     signature.signed_document_id = signed_document_id
+                    # If we're adding a signed document, update status to pending approval
+                    if signature.signature_status == "WAIT_FOR_SIGN":
+                        signature.signature_status = "SIGNED_PENDING_APPROVAL"
+                        signature.signed_at = datetime.utcnow()
                     db.flush()
             
-            # Now create the approval task
-            approval_task = create_signature_approval_task(
-                owner_id=owner_id,
-                building_id=unit.building_id,
-                requested_by_agent_id=current_user.user_id,
-                db=db
-            )
-            approval_task_id = str(approval_task.task_id)
-            
-            # Link the signature to the task (bidirectional)
-            signature.task_id = approval_task.task_id
-            db.flush()
-            
-            logger.info(
-                "Approval task created for owner status change",
-                extra={
-                    "owner_id": str(owner_id),
-                    "task_id": approval_task_id,
-                    "signature_id": str(signature.signature_id),
-                    "requested_by": str(current_user.user_id),
-                }
-            )
+            # Only create approval task if signature is pending approval (signed document provided)
+            if signature.signature_status == "SIGNED_PENDING_APPROVAL":
+                approval_task = create_signature_approval_task(
+                    owner_id=owner_id,
+                    building_id=unit.building_id,
+                    requested_by_agent_id=current_user.user_id,
+                    db=db
+                )
+                approval_task_id = str(approval_task.task_id)
+                
+                # Link the signature to the task (bidirectional)
+                signature.task_id = approval_task.task_id
+                db.flush()
+                
+                logger.info(
+                    "Approval task created for owner status change",
+                    extra={
+                        "owner_id": str(owner_id),
+                        "task_id": approval_task_id,
+                        "signature_id": str(signature.signature_id),
+                        "requested_by": str(current_user.user_id),
+                    }
+                )
+            else:
+                logger.info(
+                    "Signature created in WAIT_FOR_SIGN status - no approval task needed yet",
+                    extra={
+                        "owner_id": str(owner_id),
+                        "signature_id": str(signature.signature_id),
+                    }
+                )
         except Exception as e:
             logger.error(f"Failed to create approval task: {e}", exc_info=True)
             raise HTTPException(
