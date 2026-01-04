@@ -51,7 +51,8 @@ class ProjectResponse(BaseModel):
     required_majority_percent: float
     critical_threshold_percent: float
     majority_calc_type: str
-    created_at: datetime
+    created_at: str
+    updated_at: str
     
     @classmethod
     def from_orm(cls, obj):
@@ -68,8 +69,8 @@ class ProjectResponse(BaseModel):
             'required_majority_percent': float(obj.required_majority_percent),
             'critical_threshold_percent': float(obj.critical_threshold_percent),
             'majority_calc_type': obj.majority_calc_type,
-            'created_at': obj.created_at,
-            'updated_at': obj.updated_at,
+            'created_at': obj.created_at.isoformat(),
+            'updated_at': obj.updated_at.isoformat(),
         }
         return cls(**data)
     

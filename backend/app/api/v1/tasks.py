@@ -39,10 +39,10 @@ class TaskResponse(BaseModel):
     title: str
     description: Optional[str]
     assigned_to_agent_id: str
-    due_date: Optional[date]
+    due_date: Optional[str]
     status: str
     priority: str
-    created_at: datetime
+    created_at: str
     signed_document_id: Optional[str] = None
     signed_document_name: Optional[str] = None
     
@@ -82,10 +82,10 @@ def build_task_response(task: Task, db: Session) -> TaskResponse:
         title=task.title,
         description=task.description,
         assigned_to_agent_id=str(task.assigned_to_agent_id),
-        due_date=task.due_date,
+        due_date=task.due_date.isoformat() if task.due_date else None,
         status=task.status,
         priority=task.priority,
-        created_at=task.created_at,
+        created_at=task.created_at.isoformat(),
         signed_document_id=signed_document_id,
         signed_document_name=signed_document_name,
     )

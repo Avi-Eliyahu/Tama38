@@ -535,15 +535,14 @@ async def update_owner_status(
                     db.flush()
                 
                 # Create DocumentSignature for status change workflow
-                # When agent changes status to WAIT_FOR_SIGN, they're requesting approval,
-                # so signature should be SIGNED_PENDING_APPROVAL (not WAIT_FOR_SIGN)
-                from datetime import datetime
+                # When agent changes status to WAIT_FOR_SIGN, they want the owner to sign,
+                # so signature status should be WAIT_FOR_SIGN (not SIGNED_PENDING_APPROVAL)
                 signature = DocumentSignature(
                     document_id=document.document_id,
                     owner_id=owner_id,
-                    signature_status="SIGNED_PENDING_APPROVAL",
+                    signature_status="WAIT_FOR_SIGN",
                     signing_token=str(uuid.uuid4()),
-                    signed_at=datetime.utcnow(),  # Set signed_at since agent is requesting approval
+                    # Don't set signed_at - no signature has occurred yet
                     signed_document_id=signed_document_id,  # Link to uploaded signed contract
                 )
                 db.add(signature)

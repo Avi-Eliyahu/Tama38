@@ -125,8 +125,8 @@ def update_unit_status(unit_id: str, db: Session) -> str:
         f"Updated unit {unit_id} status",
         extra={
             "unit_id": str(unit_id),
-            "old_status": unit.unit_status,
-            "new_status": new_status,
+            "old_status": old_unit_status,
+            "new_status": unit.unit_status,
             "total_owners": unit.total_owners,
             "owners_signed": unit.owners_signed,
         }
