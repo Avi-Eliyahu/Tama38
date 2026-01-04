@@ -300,7 +300,7 @@ async def get_owner_units(
         result.append({
             "unit_id": str(unit.unit_id),
             "unit_number": unit.unit_number,
-            "floor_number": unit.unit_number,
+            "floor_number": unit.floor_number,
             "building_id": str(unit.building_id),
             "ownership_share_percent": float(unit_owner.ownership_share_percent) if unit_owner else 0,
         })
@@ -473,7 +473,7 @@ async def update_owner_status(
             owner_id=owner_id,
             building_id=unit.building_id,
             project_id=building.project_id,
-            document_type="SIGNED_CONTRACT",
+            document_type="CONTRACT",  # Use CONTRACT type (SIGNED_CONTRACT not in enum)
             file_name=signed_contract_file.filename,
             file_path=str(file_path),
             file_size_bytes=len(file_content),
@@ -554,15 +554,18 @@ async def update_owner_status(
                     signature.signed_document_id = signed_document_id
                     db.flush()
             
-            # Now create the approval task with signature_id
+            # Now create the approval task
             approval_task = create_signature_approval_task(
                 owner_id=owner_id,
                 building_id=unit.building_id,
                 requested_by_agent_id=current_user.user_id,
-                signature_id=signature.signature_id,
                 db=db
             )
             approval_task_id = str(approval_task.task_id)
+            
+            # Link the signature to the task (bidirectional)
+            signature.task_id = approval_task.task_id
+            db.flush()
             
             logger.info(
                 "Approval task created for owner status change",

@@ -29,59 +29,111 @@ async def get_dashboard_data(
     """Get dashboard data (KPIs, traffic lights, recent interactions, top buildings)"""
     start_time = datetime.utcnow()
     
+    # Base queries - filter by agent assignment if user is an agent
+    project_query = db.query(Project).filter(Project.is_deleted == False)
+    building_query = db.query(Building).filter(Building.is_deleted == False)
+    unit_query = db.query(Unit).filter(Unit.is_deleted == False)
+    owner_query = db.query(Owner).filter(
+        Owner.is_deleted == False,
+        Owner.is_current_owner == True
+    )
+    
+    # Role-based filtering for agents
+    if current_user.role == "AGENT":
+        # Create subqueries for assigned buildings and projects
+        assigned_building_ids_subq = db.query(Building.building_id).filter(
+            Building.assigned_agent_id == current_user.user_id,
+            Building.is_deleted == False
+        )
+        
+        assigned_project_ids_subq = db.query(Building.project_id).filter(
+            Building.assigned_agent_id == current_user.user_id,
+            Building.is_deleted == False
+        ).distinct()
+        
+        # Filter projects that have assigned buildings
+        project_query = project_query.filter(Project.project_id.in_(assigned_project_ids_subq))
+        
+        # Filter buildings assigned to agent
+        building_query = building_query.filter(Building.assigned_agent_id == current_user.user_id)
+        
+        # Filter units from assigned buildings
+        unit_query = unit_query.filter(Unit.building_id.in_(assigned_building_ids_subq))
+        
+        # Filter owners from units in assigned buildings
+        owner_query = owner_query.join(Unit).filter(Unit.building_id.in_(assigned_building_ids_subq))
+    
     # Total Projects
-    total_projects = db.query(Project).filter(Project.is_deleted == False).count()
+    total_projects = project_query.count()
     
     # Active Projects
-    active_projects = db.query(Project).filter(
-        Project.is_deleted == False,
+    active_projects = project_query.filter(
         Project.project_stage.in_(["PLANNING", "ACTIVE", "APPROVAL"])
     ).count()
     
     # Total Buildings
-    total_buildings = db.query(Building).filter(Building.is_deleted == False).count()
+    total_buildings = building_query.count()
     
     # Total Units
-    total_units = db.query(Unit).filter(Unit.is_deleted == False).count()
+    total_units = unit_query.count()
     
     # Total Owners
-    total_owners = db.query(Owner).filter(
-        Owner.is_deleted == False,
-        Owner.is_current_owner == True
-    ).count()
+    total_owners = owner_query.count()
     
-    # Calculate overall signature percentage
-    buildings = db.query(Building).filter(Building.is_deleted == False).all()
+    # Calculate overall signature percentage from assigned buildings only
+    buildings = building_query.all()
     total_signature_sum = sum(float(b.signature_percentage or 0) for b in buildings)
     signed_percentage = total_signature_sum / len(buildings) if buildings else 0.0
     
-    # Pending Approvals
-    pending_approvals = db.query(DocumentSignature).filter(
+    # Pending Approvals - filter by agent if needed
+    approval_query = db.query(DocumentSignature).filter(
         DocumentSignature.signature_status == "SIGNED_PENDING_APPROVAL"
-    ).count()
+    )
+    if current_user.role == "AGENT":
+        # Only show approvals for owners assigned to this agent
+        approval_query = approval_query.join(Owner).filter(
+            Owner.assigned_agent_id == current_user.user_id
+        )
+    pending_approvals = approval_query.count()
     
-    # Overdue Tasks
+    # Overdue Tasks - filter by agent if needed
     today = date.today()
-    overdue_tasks = db.query(Task).filter(
+    task_query = db.query(Task).filter(
         and_(
             Task.due_date < today,
             Task.status.in_(["NOT_STARTED", "IN_PROGRESS", "BLOCKED"])
         )
-    ).count()
+    )
+    if current_user.role == "AGENT":
+        # Only show tasks assigned to this agent
+        task_query = task_query.filter(Task.assigned_to_agent_id == current_user.user_id)
+    overdue_tasks = task_query.count()
     
-    # Recent Interactions count (last 24 hours)
+    # Recent Interactions count (last 24 hours) - filter by agent if needed
     cutoff_time = datetime.utcnow() - timedelta(hours=24)
-    recent_interactions = db.query(Interaction).filter(
+    interaction_query = db.query(Interaction).filter(
         Interaction.interaction_timestamp >= cutoff_time
-    ).count()
+    )
+    if current_user.role == "AGENT":
+        # Only show interactions by this agent
+        interaction_query = interaction_query.filter(Interaction.agent_id == current_user.user_id)
+    recent_interactions = interaction_query.count()
     
-    # Projects by Stage
+    # Projects by Stage - use filtered project_query
     projects_by_stage = db.query(
         Project.project_stage,
         func.count(Project.project_id).label('count')
     ).filter(
         Project.is_deleted == False
-    ).group_by(Project.project_stage).all()
+    )
+    if current_user.role == "AGENT":
+        # Filter by assigned project IDs
+        assigned_project_ids = db.query(Building.project_id).filter(
+            Building.assigned_agent_id == current_user.user_id,
+            Building.is_deleted == False
+        ).distinct()
+        projects_by_stage = projects_by_stage.filter(Project.project_id.in_(assigned_project_ids))
+    projects_by_stage = projects_by_stage.group_by(Project.project_stage).all()
     
     projects_by_stage_dict = {
         "PLANNING": 0,
@@ -93,13 +145,19 @@ async def get_dashboard_data(
     for stage, count in projects_by_stage:
         projects_by_stage_dict[stage] = count
     
-    # Buildings by Status
-    buildings_by_status = db.query(
+    # Buildings by Status - use filtered building_query
+    buildings_by_status_query = db.query(
         Building.current_status,
         func.count(Building.building_id).label('count')
     ).filter(
         Building.is_deleted == False
-    ).group_by(Building.current_status).all()
+    )
+    if current_user.role == "AGENT":
+        # Filter by assigned buildings
+        buildings_by_status_query = buildings_by_status_query.filter(
+            Building.assigned_agent_id == current_user.user_id
+        )
+    buildings_by_status = buildings_by_status_query.group_by(Building.current_status).all()
     
     buildings_by_status_dict = {
         "INITIAL": 0,

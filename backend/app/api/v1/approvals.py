@@ -364,15 +364,34 @@ async def sign_document_by_token(
 
 @router.get("/queue", response_model=List[SignatureResponse])
 async def get_approval_queue(
+    owner_id: Optional[UUID] = Query(None),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
+    current_user: User = Depends(get_current_user)
 ):
     """Get approval queue (signatures pending manager approval)"""
-    signatures = db.query(DocumentSignature).filter(
+    query = db.query(DocumentSignature).filter(
         DocumentSignature.signature_status == "SIGNED_PENDING_APPROVAL"
-    ).order_by(desc(DocumentSignature.signed_at)).offset(skip).limit(limit).all()
+    )
+    
+    # Role-based access control: Agents can only see approvals for owners assigned to them
+    if current_user.role == "AGENT":
+        query = query.join(Owner, DocumentSignature.owner_id == Owner.owner_id).filter(Owner.assigned_agent_id == current_user.user_id)
+        if owner_id:
+            # Additional check: ensure the owner is assigned to them
+            query = query.filter(Owner.owner_id == owner_id)
+    elif current_user.role not in ["SUPER_ADMIN", "PROJECT_MANAGER"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only agents, managers, and admins can view approvals"
+        )
+    else:
+        # Managers and admins can filter by owner_id if provided
+        if owner_id:
+            query = query.filter(DocumentSignature.owner_id == owner_id)
+    
+    signatures = query.order_by(desc(DocumentSignature.signed_at)).offset(skip).limit(limit).all()
     
     # Get signed document names for signatures that have signed_document_id
     signed_doc_map = {}

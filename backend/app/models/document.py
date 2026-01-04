@@ -31,7 +31,7 @@ class Document(Base):
     is_deleted = Column(Boolean, default=False)
     
     # Relationships
-    signatures = relationship("DocumentSignature", back_populates="document")
+    signatures = relationship("DocumentSignature", back_populates="document", foreign_keys="DocumentSignature.document_id")
     
     # Indexes
     __table_args__ = (
@@ -51,6 +51,8 @@ class DocumentSignature(Base):
     signing_token = Column(String(255), unique=True)  # Token for signing link
     signature_data = Column(Text)  # Base64 signature image/data
     signed_at = Column(DateTime)
+    signed_document_id = Column(UUID(as_uuid=True), ForeignKey('documents.document_id'), nullable=True)  # Link to uploaded signed contract document
+    task_id = Column(UUID(as_uuid=True), ForeignKey('tasks.task_id'), nullable=True)  # Link to approval task
     approved_by_user_id = Column(UUID(as_uuid=True), ForeignKey('users.user_id'))
     approved_at = Column(DateTime)
     approval_reason = Column(Text)  # Required for approval
@@ -63,7 +65,7 @@ class DocumentSignature(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    document = relationship("Document", back_populates="signatures")
+    document = relationship("Document", back_populates="signatures", foreign_keys="[DocumentSignature.document_id]")
     
     # Indexes
     __table_args__ = (

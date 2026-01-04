@@ -11,6 +11,7 @@ from datetime import datetime
 from app.core.database import get_db
 from app.models.user import User
 from app.models.project import Project
+from app.models.building import Building
 from app.api.dependencies import get_current_user, require_role
 import logging
 
@@ -68,6 +69,7 @@ class ProjectResponse(BaseModel):
             'critical_threshold_percent': float(obj.critical_threshold_percent),
             'majority_calc_type': obj.majority_calc_type,
             'created_at': obj.created_at,
+            'updated_at': obj.updated_at,
         }
         return cls(**data)
     
@@ -85,10 +87,15 @@ async def list_projects(
     """List all projects (with role-based filtering)"""
     query = db.query(Project).filter(Project.is_deleted == False)
     
-    # Filter by role (agents can only see assigned projects)
+    # Filter by role (agents can only see projects with buildings assigned to them)
     if current_user.role == "AGENT":
-        # TODO: Filter by assigned buildings/agents
-        pass
+        # Use subquery to find project_ids that have buildings assigned to this agent
+        from sqlalchemy import exists
+        assigned_project_ids = db.query(Building.project_id).filter(
+            Building.assigned_agent_id == current_user.user_id,
+            Building.is_deleted == False
+        ).distinct()
+        query = query.filter(Project.project_id.in_(assigned_project_ids))
     
     projects = query.order_by(desc(Project.created_at)).offset(skip).limit(limit).all()
     # Convert UUIDs to strings for response
@@ -191,6 +198,21 @@ async def get_project(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
+    
+    # Role-based access control: Agents can only access projects with buildings assigned to them
+    if current_user.role == "AGENT":
+        # Check if agent has any buildings assigned in this project
+        assigned_building = db.query(Building).filter(
+            Building.project_id == project_id,
+            Building.assigned_agent_id == current_user.user_id,
+            Building.is_deleted == False
+        ).first()
+        
+        if not assigned_building:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this project"
+            )
     
     # Convert UUID to string for response
     return ProjectResponse(

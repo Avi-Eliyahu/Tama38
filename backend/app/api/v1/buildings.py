@@ -68,11 +68,8 @@ async def list_buildings(
     
     # Role-based filtering
     if current_user.role == "AGENT":
-        # Agents see buildings assigned to them OR unassigned buildings (assigned_agent_id is None)
-        query = query.filter(
-            (Building.assigned_agent_id == current_user.user_id) |
-            (Building.assigned_agent_id.is_(None))
-        )
+        # Agents see ONLY buildings assigned to them
+        query = query.filter(Building.assigned_agent_id == current_user.user_id)
     
     buildings = query.offset(skip).limit(limit).all()
     
@@ -192,6 +189,14 @@ async def get_building(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Building not found"
         )
+    
+    # Role-based access control: Agents can only access buildings assigned to them
+    if current_user.role == "AGENT":
+        if building.assigned_agent_id != current_user.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this building"
+            )
     
     # Get agent details if assigned
     assigned_agent = None

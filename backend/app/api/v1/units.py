@@ -61,6 +61,11 @@ async def list_units(
     if building_id:
         query = query.filter(Unit.building_id == building_id)
     
+    # Role-based filtering: Agents can only see units from buildings assigned to them
+    if current_user.role == "AGENT":
+        # Join with Building to filter by assigned_agent_id
+        query = query.join(Building).filter(Building.assigned_agent_id == current_user.user_id)
+    
     # Sort by unit_number (apartment number) - convert to integer for proper numeric sorting
     # Handle cases where unit_number might not be numeric
     from sqlalchemy import cast, Integer
@@ -164,6 +169,15 @@ async def get_unit(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Unit not found"
         )
+    
+    # Role-based access control: Agents can only access units from buildings assigned to them
+    if current_user.role == "AGENT":
+        building = db.query(Building).filter(Building.building_id == unit.building_id).first()
+        if not building or building.assigned_agent_id != current_user.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this unit"
+            )
     
     # Convert UUIDs to strings for response
     return UnitResponse(

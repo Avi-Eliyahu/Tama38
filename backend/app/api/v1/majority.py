@@ -34,6 +34,14 @@ async def get_building_majority(
             detail="Building not found"
         )
     
+    # Role-based access control: Agents can only access buildings assigned to them
+    if current_user.role == "AGENT":
+        if building.assigned_agent_id != current_user.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this building"
+            )
+    
     # Calculate majority
     start_time = time.time()
     result = calculate_building_majority(str(building_id), db)
@@ -70,6 +78,14 @@ async def recalculate_majority(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Building not found"
         )
+    
+    # Role-based access control: Agents can only access buildings assigned to them
+    if current_user.role == "AGENT":
+        if building.assigned_agent_id != current_user.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this building"
+            )
     
     start_time = time.time()
     result = calculate_building_majority(str(building_id), db)
