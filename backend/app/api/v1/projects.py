@@ -69,8 +69,8 @@ class ProjectResponse(BaseModel):
             'required_majority_percent': float(obj.required_majority_percent),
             'critical_threshold_percent': float(obj.critical_threshold_percent),
             'majority_calc_type': obj.majority_calc_type,
-            'created_at': obj.created_at.isoformat(),
-            'updated_at': obj.updated_at.isoformat(),
+            'created_at': obj.created_at.isoformat() if obj.created_at else datetime.utcnow().isoformat(),
+            'updated_at': obj.updated_at.isoformat() if obj.updated_at else datetime.utcnow().isoformat(),
         }
         return cls(**data)
     
@@ -113,7 +113,8 @@ async def list_projects(
             required_majority_percent=float(p.required_majority_percent),
             critical_threshold_percent=float(p.critical_threshold_percent),
             majority_calc_type=p.majority_calc_type,
-            created_at=p.created_at,
+            created_at=p.created_at.isoformat() if p.created_at else datetime.utcnow().isoformat(),
+            updated_at=p.updated_at.isoformat() if p.updated_at else datetime.utcnow().isoformat(),
         )
         for p in projects
     ]
@@ -178,7 +179,8 @@ async def create_project(
         required_majority_percent=float(project.required_majority_percent),
         critical_threshold_percent=float(project.critical_threshold_percent),
         majority_calc_type=project.majority_calc_type,
-        created_at=project.created_at,
+        created_at=project.created_at.isoformat() if project.created_at else datetime.utcnow().isoformat(),
+        updated_at=project.updated_at.isoformat() if project.updated_at else datetime.utcnow().isoformat(),
     )
 
 
@@ -228,7 +230,8 @@ async def get_project(
         required_majority_percent=float(project.required_majority_percent),
         critical_threshold_percent=float(project.critical_threshold_percent),
         majority_calc_type=project.majority_calc_type,
-        created_at=project.created_at,
+        created_at=project.created_at.isoformat() if project.created_at else datetime.utcnow().isoformat(),
+        updated_at=project.updated_at.isoformat() if project.updated_at else datetime.utcnow().isoformat(),
     )
 
 
@@ -277,7 +280,8 @@ async def update_project(
         required_majority_percent=float(project.required_majority_percent),
         critical_threshold_percent=float(project.critical_threshold_percent),
         majority_calc_type=project.majority_calc_type,
-        created_at=project.created_at,
+        created_at=project.created_at.isoformat() if project.created_at else datetime.utcnow().isoformat(),
+        updated_at=project.updated_at.isoformat() if project.updated_at else datetime.utcnow().isoformat(),
     )
 
 
