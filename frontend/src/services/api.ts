@@ -106,6 +106,19 @@ class ApiClient {
             
             return this.client(originalRequest);
           } catch (refreshError) {
+            // Refresh failed - check if it's a "User not found" error
+            const errorDetail = error.response?.data?.detail || refreshError.response?.data?.detail || '';
+            if (errorDetail.includes('User not found') || errorDetail.includes('User not found or inactive')) {
+              // User doesn't exist in current database - clear all auth and redirect to login
+              this.processQueue(refreshError);
+              this.clearAuth();
+              sessionStorage.clear();
+              // Redirect to login
+              if (typeof window !== 'undefined') {
+                window.location.href = '/login';
+              }
+              return Promise.reject(error);
+            }
             // Refresh failed - clear auth but don't auto-logout
             // Let the user continue working until they manually logout or close browser
             this.processQueue(refreshError);
@@ -115,6 +128,19 @@ class ApiClient {
           } finally {
             this.isRefreshing = false;
           }
+        }
+        
+        // Check for "User not found" errors even if not 401 (could be 403)
+        const errorDetail = error.response?.data?.detail || '';
+        if (errorDetail.includes('User not found') || errorDetail.includes('User not found or inactive')) {
+          // User doesn't exist in current database - clear all auth and redirect to login
+          this.clearAuth();
+          sessionStorage.clear();
+          // Redirect to login
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          return Promise.reject(error);
         }
         
         return Promise.reject(error);

@@ -33,7 +33,10 @@ export default function Login() {
       fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.tsx:22',message:'authService.login completed',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
       // #endregion
       
-      navigate('/dashboard');
+      // Redirect agents to agent mobile view, others to dashboard
+      const user = authService.getCurrentUserSync();
+      const redirectPath = user?.role === 'AGENT' ? '/agent' : '/dashboard';
+      navigate(redirectPath);
     } catch (err: any) {
       // #region agent log
       fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.tsx:25',message:'Login error caught',data:{error:err?.message,status:err?.response?.status},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});

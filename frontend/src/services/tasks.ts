@@ -4,6 +4,7 @@ export interface Task {
   task_id: string;
   building_id?: string;
   owner_id?: string;
+  signature_id?: string;
   task_type: string;
   title: string;
   description?: string;
@@ -12,6 +13,8 @@ export interface Task {
   status: string;
   priority: string;
   created_at: string;
+  signed_document_id?: string;
+  signed_document_name?: string;
 }
 
 export interface CreateTaskDto {

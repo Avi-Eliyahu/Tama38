@@ -151,7 +151,7 @@ export default function OwnerStatusChange({ owner, onStatusChange }: OwnerStatus
           {t('owners.currentStatus')}
         </label>
         <span className={`px-3 py-1 text-sm font-medium rounded ${getStatusColor(owner.owner_status)}`}>
-          {t(`ownerStatuses.${owner.owner_status}`)}
+          {t(`owners.statusLabels.${owner.owner_status}`)}
         </span>
       </div>
 
@@ -183,14 +183,14 @@ export default function OwnerStatusChange({ owner, onStatusChange }: OwnerStatus
               // Agents can only select workflow statuses
               WORKFLOW_STATUSES.map(status => (
                 <option key={status} value={status}>
-                  {t(`ownerStatuses.${status}`)}
+                  {t(`owners.statusLabels.${status}`)}
                 </option>
               ))
             ) : (
               // Managers/admins can select all statuses except restricted ones
               ['NOT_CONTACTED', 'NEGOTIATING', 'AGREED_TO_SIGN', 'WAIT_FOR_SIGN', 'SIGNED', 'REFUSED'].map(status => (
                 <option key={status} value={status}>
-                  {t(`ownerStatuses.${status}`)}
+                  {t(`owners.statusLabels.${status}`)}
                 </option>
               ))
             )}

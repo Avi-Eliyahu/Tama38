@@ -12,7 +12,8 @@ import BuildingEditForm from '../components/BuildingEditForm';
 
 export default function BuildingDetail() {
   const { buildingId } = useParams<{ buildingId: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = ['he', 'ar'].includes(i18n.language);
   const [building, setBuilding] = useState<Building | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -113,14 +114,35 @@ export default function BuildingDetail() {
       SIGNED: 'bg-green-100 text-green-800',
       PENDING: 'bg-yellow-100 text-yellow-800',
       NEGOTIATING: 'bg-blue-100 text-blue-800',
+      AGREED_TO_SIGN: 'bg-blue-100 text-blue-800',
+      WAIT_FOR_SIGN: 'bg-yellow-100 text-yellow-800',
       REJECTED: 'bg-red-100 text-red-800',
+      REFUSED: 'bg-red-100 text-red-800',
+      NOT_CONTACTED: 'bg-gray-100 text-gray-800',
       ACTIVE: 'bg-blue-100 text-blue-800',
       COMPLETED: 'bg-green-100 text-green-800',
       ON_HOLD: 'bg-yellow-100 text-yellow-800',
       CANCELLED: 'bg-red-100 text-red-800',
+      DECEASED: 'bg-gray-100 text-gray-800',
+      INCAPACITATED: 'bg-gray-100 text-gray-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
+
+    const getOwnerStatusLabel = (status: string) => {
+      const labels: Record<string, string> = {
+        NOT_CONTACTED: t('owners.statusLabels.NOT_CONTACTED'),
+        PENDING_SIGNATURE: t('owners.statusLabels.PENDING_SIGNATURE'),
+        NEGOTIATING: t('owners.statusLabels.NEGOTIATING'),
+        AGREED_TO_SIGN: t('owners.statusLabels.AGREED_TO_SIGN'),
+        WAIT_FOR_SIGN: t('owners.statusLabels.WAIT_FOR_SIGN'),
+        SIGNED: t('owners.statusLabels.SIGNED'),
+        REFUSED: t('owners.statusLabels.REFUSED'),
+        DECEASED: t('owners.statusLabels.DECEASED'),
+        INCAPACITATED: t('owners.statusLabels.INCAPACITATED'),
+      };
+      return labels[status] || status;
+    };
 
   const getUnitStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -196,6 +218,11 @@ export default function BuildingDetail() {
 
   const signedOwners = units.reduce((sum, unit) => sum + unit.owners_signed, 0);
   const totalOwners = units.reduce((sum, unit) => sum + unit.total_owners, 0);
+  
+  // Calculate actual signature percentage based on signed units
+  const totalUnits = building.total_units || units.length;
+  const signedUnits = building.units_signed ?? 0;
+  const actualSignaturePercentage = totalUnits > 0 ? (signedUnits / totalUnits) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -249,10 +276,10 @@ export default function BuildingDetail() {
             {t('buildings.signatureProgress')}
           </div>
           <div className="text-3xl font-bold text-gray-900">
-            {building.signature_percentage.toFixed(1)}%
+            {actualSignaturePercentage.toFixed(1)}%
           </div>
           <div className="text-sm text-gray-500 mt-1">
-            {building.units_signed ?? 0} {t('buildings.of')} {building.total_units || units.length} {t('buildings.units')}
+            {signedUnits} {t('buildings.of')} {totalUnits} {t('buildings.units')}
           </div>
         </div>
 
@@ -364,16 +391,16 @@ export default function BuildingDetail() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                         {t('buildings.unit')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                         {t('buildings.area')} (m²)
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                         {t('buildings.owners')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                         {t('buildings.status')}
                       </th>
                     </tr>
@@ -385,7 +412,7 @@ export default function BuildingDetail() {
                         onClick={() => navigate(`/units/${unit.unit_id}`)}
                         className="hover:bg-gray-50 cursor-pointer"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
                           <div className="text-sm font-medium text-teal-600 hover:text-teal-700">
                             {t('buildings.unit')} {unit.unit_number}
                           </div>
@@ -394,13 +421,13 @@ export default function BuildingDetail() {
                             {unit.area_sqm && `${unit.area_sqm} m²`}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${isRTL ? 'text-right' : 'text-left'}`}>
                           {unit.area_sqm || '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${isRTL ? 'text-right' : 'text-left'}`}>
                           {unit.total_owners}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
                           <span
                             className={`px-2 py-1 text-xs font-medium rounded ${getUnitStatusColor(unit.unit_status)}`}
                           >
@@ -434,19 +461,19 @@ export default function BuildingDetail() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                         {t('owners.ownerName')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                         {t('buildings.unit')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                         {t('owners.contact')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                         {t('owners.ownershipShare')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                         {t('owners.status')}
                       </th>
                     </tr>
@@ -458,27 +485,27 @@ export default function BuildingDetail() {
                         onClick={() => navigate(`/owners/${owner.owner_id}`, { state: { fromBuilding: true, buildingId } })}
                         className="hover:bg-gray-50 cursor-pointer"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
                           <div className="text-sm font-medium text-teal-600 hover:text-teal-700">
                             {owner.full_name}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
                           <div className="text-sm text-gray-900">
                             {t('buildings.unit')} {unit.unit_number}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
+                        <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
+                          <div className={`text-sm text-gray-900 ${isRTL ? 'text-right' : ''}`}>
                             {owner.phone_for_contact && (
-                              <div className="flex items-center">
-                                <span className="mr-2">📞</span>
+                              <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                <span className={isRTL ? 'ml-2' : 'mr-2'}>📞</span>
                                 <span>{owner.phone_for_contact}</span>
                               </div>
                             )}
                             {owner.email && (
-                              <div className="flex items-center mt-1">
-                                <span className="mr-2">✉️</span>
+                              <div className={`flex items-center mt-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                <span className={isRTL ? 'ml-2' : 'mr-2'}>✉️</span>
                                 <span>{owner.email}</span>
                               </div>
                             )}
@@ -487,14 +514,14 @@ export default function BuildingDetail() {
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${isRTL ? 'text-right' : 'text-left'}`}>
                           {owner.ownership_share_percent}%
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
                           <span
                             className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(owner.owner_status)}`}
                           >
-                            {owner.owner_status}
+                            {getOwnerStatusLabel(owner.owner_status)}
                           </span>
                         </td>
                       </tr>

@@ -30,6 +30,10 @@ export default function Sidebar() {
 
   // Filter navigation based on role
   const filteredNav = navigation.filter((item) => {
+    // Hide dashboard for agents
+    if (item.href === '/dashboard' && userRole === 'AGENT') {
+      return false;
+    }
     if (item.href === '/approvals' && !['SUPER_ADMIN', 'PROJECT_MANAGER'].includes(userRole)) {
       return false;
     }

@@ -26,6 +26,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <Layout>{children}</Layout>;
 }
 
+function NavigateToDefault() {
+  const user = authService.getCurrentUserSync();
+  // Agents default to agent mobile view, others to dashboard
+  const defaultPath = user?.role === 'AGENT' ? '/agent' : '/dashboard';
+  return <Navigate to={defaultPath} replace />;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -160,7 +167,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<NavigateToDefault />} />
       </Routes>
     </BrowserRouter>
   );

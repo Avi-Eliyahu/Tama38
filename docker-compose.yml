@@ -26,7 +26,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@database:5432/tama38_dev
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/tama38_hebrew_sample
       - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
       - ENVIRONMENT=development
       - DEBUG=true

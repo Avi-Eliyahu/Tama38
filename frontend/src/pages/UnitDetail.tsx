@@ -107,9 +107,26 @@ export default function UnitDetail() {
       COMPLETED: 'bg-green-100 text-green-800',
       ON_HOLD: 'bg-yellow-100 text-yellow-800',
       CANCELLED: 'bg-red-100 text-red-800',
+      DECEASED: 'bg-gray-100 text-gray-800',
+      INCAPACITATED: 'bg-gray-100 text-gray-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
+
+    const getOwnerStatusLabel = (status: string) => {
+      const labels: Record<string, string> = {
+        NOT_CONTACTED: t('owners.statusLabels.NOT_CONTACTED'),
+        PENDING_SIGNATURE: t('owners.statusLabels.PENDING_SIGNATURE'),
+        NEGOTIATING: t('owners.statusLabels.NEGOTIATING'),
+        AGREED_TO_SIGN: t('owners.statusLabels.AGREED_TO_SIGN'),
+        WAIT_FOR_SIGN: t('owners.statusLabels.WAIT_FOR_SIGN'),
+        SIGNED: t('owners.statusLabels.SIGNED'),
+        REFUSED: t('owners.statusLabels.REFUSED'),
+        DECEASED: t('owners.statusLabels.DECEASED'),
+        INCAPACITATED: t('owners.statusLabels.INCAPACITATED'),
+      };
+      return labels[status] || status;
+    };
 
   const getUnitStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -381,7 +398,7 @@ export default function UnitDetail() {
                           <span
                             className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(owner.owner_status)}`}
                           >
-                            {owner.owner_status}
+                            {getOwnerStatusLabel(owner.owner_status)}
                           </span>
                         </td>
                       </tr>

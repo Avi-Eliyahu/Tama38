@@ -9,6 +9,9 @@ export interface Signature {
   signed_at?: string;
   approved_at?: string;
   created_at: string;
+  task_id?: string;
+  signed_document_id?: string;
+  signed_document_name?: string;
 }
 
 export interface InitiateSignatureDto {
@@ -22,8 +25,8 @@ export interface ApprovalRequestDto {
 
 class ApprovalsService {
   async getWaitingSignatures(): Promise<Signature[]> {
-    const response = await apiClient.get<Signature[]>('/approvals/waiting');
-    return response.data;
+    // Use the correct /approvals/queue endpoint instead of non-existent /approvals/waiting
+    return this.getApprovalQueue();
   }
 
   async getApprovalQueue(): Promise<Signature[]> {
@@ -51,7 +54,8 @@ class ApprovalsService {
   }
 
   async getApprovalsByOwner(ownerId: string): Promise<Signature[]> {
-    const response = await apiClient.get<Signature[]>('/approvals/waiting', {
+    // Get approvals (signatures pending manager approval) for a specific owner
+    const response = await apiClient.get<Signature[]>('/approvals/queue', {
       params: { owner_id: ownerId },
     });
     return response.data;

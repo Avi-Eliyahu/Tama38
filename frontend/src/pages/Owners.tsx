@@ -5,7 +5,8 @@ import { ownersService, Owner } from '../services/owners';
 import Breadcrumbs, { BreadcrumbItem } from '../components/Breadcrumbs';
 
 export default function Owners() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = ['he', 'ar'].includes(i18n.language);
   const navigate = useNavigate();
   const [owners, setOwners] = useState<Owner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,13 +55,38 @@ export default function Owners() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      ACTIVE: 'bg-green-100 text-green-800',
+      SIGNED: 'bg-green-100 text-green-800',
       PENDING: 'bg-yellow-100 text-yellow-800',
+      NEGOTIATING: 'bg-blue-100 text-blue-800',
+      AGREED_TO_SIGN: 'bg-blue-100 text-blue-800',
+      WAIT_FOR_SIGN: 'bg-yellow-100 text-yellow-800',
+      REFUSED: 'bg-red-100 text-red-800',
+      NOT_CONTACTED: 'bg-gray-100 text-gray-800',
+      ACTIVE: 'bg-blue-100 text-blue-800',
       INACTIVE: 'bg-gray-100 text-gray-800',
-      SIGNED: 'bg-blue-100 text-blue-800',
+      COMPLETED: 'bg-green-100 text-green-800',
+      ON_HOLD: 'bg-yellow-100 text-yellow-800',
+      CANCELLED: 'bg-red-100 text-red-800',
+      DECEASED: 'bg-gray-100 text-gray-800',
+      INCAPACITATED: 'bg-gray-100 text-gray-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
+
+    const getOwnerStatusLabel = (status: string) => {
+      const labels: Record<string, string> = {
+        NOT_CONTACTED: t('owners.statusLabels.NOT_CONTACTED'),
+        PENDING_SIGNATURE: t('owners.statusLabels.PENDING_SIGNATURE'),
+        NEGOTIATING: t('owners.statusLabels.NEGOTIATING'),
+        AGREED_TO_SIGN: t('owners.statusLabels.AGREED_TO_SIGN'),
+        WAIT_FOR_SIGN: t('owners.statusLabels.WAIT_FOR_SIGN'),
+        SIGNED: t('owners.statusLabels.SIGNED'),
+        REFUSED: t('owners.statusLabels.REFUSED'),
+        DECEASED: t('owners.statusLabels.DECEASED'),
+        INCAPACITATED: t('owners.statusLabels.INCAPACITATED'),
+      };
+      return labels[status] || status;
+    };
 
   if (loading && owners.length === 0) {
     return (
@@ -138,19 +164,19 @@ export default function Owners() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                   {t('owners.ownerName')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                   {t('owners.contact')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                   {t('owners.ownershipShare')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                   {t('owners.status')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${isRTL ? 'text-right' : 'text-left'}`}>
                   {t('owners.preferredContact')}
                 </th>
               </tr>
@@ -162,20 +188,20 @@ export default function Owners() {
                       onClick={() => navigate(`/owners/${owner.owner_id}`, { state: { fromOwnersList: true } })}
                       className="hover:bg-gray-50 cursor-pointer"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
                         <div className="text-sm font-medium text-teal-600 hover:text-teal-700">{owner.full_name}</div>
                       </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                  <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
+                    <div className={`text-sm text-gray-900 ${isRTL ? 'text-right' : ''}`}>
                       {owner.phone_for_contact && (
-                        <div className="flex items-center">
-                          <span className="mr-2">📞</span>
+                        <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+                          <span className={isRTL ? 'ml-2' : 'mr-2'}>📞</span>
                           <span>{owner.phone_for_contact}</span>
                         </div>
                       )}
                       {owner.email && (
-                        <div className="flex items-center mt-1">
-                          <span className="mr-2">✉️</span>
+                        <div className={`flex items-center mt-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                          <span className={isRTL ? 'ml-2' : 'mr-2'}>✉️</span>
                           <span>{owner.email}</span>
                         </div>
                       )}
@@ -184,17 +210,17 @@ export default function Owners() {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
                     <div className="text-sm text-gray-900">{owner.ownership_share_percent}%</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(owner.owner_status)}`}
                     >
-                      {owner.owner_status}
+                      {getOwnerStatusLabel(owner.owner_status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className={`px-6 py-4 whitespace-nowrap ${isRTL ? 'text-right' : 'text-left'}`}>
                     <div className="text-sm text-gray-500">
                       {owner.preferred_contact_method || t('owners.notSpecified')}
                     </div>

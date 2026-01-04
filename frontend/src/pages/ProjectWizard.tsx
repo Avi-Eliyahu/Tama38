@@ -30,7 +30,7 @@ interface Owner {
   unit_index: number;
   full_name: string;
   id_number?: string;
-  phone?: string;
+  phone?: string; // Note: Wizard API accepts 'phone' but maps to 'phone_for_contact' in database
   email?: string;
   ownership_share_percent: number;
   preferred_contact_method?: string;
