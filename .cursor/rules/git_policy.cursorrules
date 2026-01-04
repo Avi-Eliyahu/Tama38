@@ -1,0 +1,277 @@
+# Git Policy Rules for Cursor AI Assistant
+
+## Core Principles
+
+1. **Never auto-commit**: Always wait for explicit user request
+2. **Track all changes**: Maintain internal log of modifications
+3. **Conventional Commits**: Generate commit messages in standard format
+4. **Per-user develop branch**: Use `develop-{username}` pattern
+5. **Auto-push milestones**: Push automatically after significant changes
+6. **Review before merge**: Always require review before merging to main
+
+## Branch Management
+
+### Default Branch Strategy
+
+- **User develop branch**: `develop-{username}` (e.g., `develop-aviel`)
+  - Username detected from `git config user.name` (lowercase, spaces → hyphens)
+- **Feature branches**: `feature/{description}` (auto-created after main merge for next cycle)
+- **Main branch**: `main` (protected, only merged from develop)
+
+### Branch Operations
+
+**When user requests commit**:
+- Commit to current branch (usually `develop-{username}`)
+- If on feature branch, commit to feature branch
+
+**When user requests tag**:
+- Must be on `develop-{username}` branch
+- Merge `develop-{username}` → `main`
+- Create tag on `main`
+- Create new `develop-{username}` branch
+- Create initial feature branches
+
+## Commit Message Generation
+
+### Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+```
+
+### Types
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation
+- `style`: Code style (formatting)
+- `refactor`: Code refactoring
+- `perf`: Performance improvement
+- `test`: Tests
+- `chore`: Maintenance tasks
+
+### Scope Examples
+
+- `projects`, `buildings`, `units`, `owners`
+- `auth`, `api`, `frontend`, `backend`
+- `wizard`, `interactions`, `documents`
+
+### Generation Process
+
+1. Analyze changed files since last commit
+2. Categorize changes (feature/bug/refactor/etc.)
+3. Determine primary scope
+4. Generate subject line (< 72 chars)
+5. Generate body with bullet points
+6. Use present tense, imperative mood
+
+## Change Tracking
+
+### Track Between Commits
+
+Maintain internal log:
+- Files modified/added/deleted
+- Feature descriptions
+- Bug descriptions
+- Change summaries
+
+### Use Tracking For
+
+- Commit message generation
+- Release summary generation
+- AI review analysis
+- Change reports to user
+
+## Push Strategy
+
+### Automatic Push Triggers
+
+Push automatically when:
+- **Every 5 commits** (counted since last push)
+- User explicitly requests: `"push to remote"`
+
+### Commit Counting
+
+- Track commits since last push
+- Reset counter after successful push
+- Display count when auto-pushing
+
+### Conflict Checking
+
+- **Regular pushes**: No conflict check
+- **Merge to main**: Always check for conflicts
+- **If conflicts detected**:
+  1. Present conflict details to user
+  2. List conflicted files
+  3. Offer resolution options:
+     - "AI resolve conflicts" → AI analyzes and suggests fixes
+     - "manual resolve" → User resolves manually
+  4. Wait for user confirmation
+  5. Continue with merge after resolution
+
+## Tagging Workflow
+
+### When User Requests Tag
+
+1. Verify version format (SemVer: vMAJOR.MINOR.PATCH)
+2. Check current branch is `develop-{username}`
+3. Generate release summary from change log
+4. **REQUIRE REVIEW**:
+   - Offer: "AI review" or "manual review"
+   - Wait for user choice
+5. After review approval:
+   - Merge `develop-{username}` → `main`
+   - **Check for conflicts**:
+     - If conflicts: Present details, offer resolution
+     - Wait for resolution confirmation
+   - Create annotated tag
+   - Push `main` and tag
+   - Create new `develop-{username}` branch
+   - Create feature branches for next development cycle
+
+### Review Process
+
+**AI Review**:
+- Analyze code changes
+- Check for breaking changes
+- Verify code quality
+- Report findings
+
+**Manual Review**:
+- Wait for user confirmation
+- User reviews changes themselves
+- User confirms when ready
+
+## File Handling
+
+### Never Stage
+
+- Files in `.gitignore`
+- Debug logs (`.cursor/debug.log`)
+- Temporary files
+- Build artifacts
+
+### Always Clean Before Commit
+
+- Remove debug instrumentation
+- Remove console.log statements
+- Fix linting errors
+- Format code
+
+## User Commands Recognition
+
+### Commit Commands
+
+- `"commit changes"`
+- `"create commit"`
+- `"save changes"`
+- `"commit"`
+
+### Push Commands
+
+- `"push to remote"`
+- `"push changes"`
+
+### Tag Commands
+
+- `"tag version v1.2.0"`
+- `"create version tag v1.2.0"`
+- `"release v1.2.0"`
+- `"tag v1.2.0"`
+
+### Review Commands
+
+- `"AI review"`
+- `"manual review"`
+- `"confirm tag v1.2.0"`
+- `"cancel review"`
+
+## Error Responses
+
+### No Changes
+
+```
+⚠️ No changes detected. Working directory is clean.
+```
+
+### Wrong Branch
+
+```
+⚠️ You're on 'feature/xyz', not 'develop-{username}'.
+   Switching to develop-{username}...
+```
+
+### Tag Exists
+
+```
+⚠️ Tag v1.2.0 already exists!
+   Use a different version or delete existing tag first.
+```
+
+### Conflicts
+
+```
+⚠️ Conflicts detected when merging to main!
+   Files with conflicts:
+   - file1.tsx
+   - file2.py
+   
+   Choose resolution method:
+   - Type "AI resolve conflicts" for AI-assisted resolution
+   - Type "manual resolve" to resolve manually
+```
+
+**AI Conflict Resolution Process**:
+1. Analyze conflict markers
+2. Understand context from both branches
+3. Suggest resolution (show diff preview)
+4. Wait for user confirmation
+5. Apply resolution and continue merge
+
+## Summary Generation
+
+### Commit Summary Format
+
+```
+## Changes Summary
+
+### Files Modified:
+- path/to/file1.tsx (modified)
+- path/to/file2.py (new)
+
+### Features Added:
+- Description of feature 1
+- Description of feature 2
+
+### Bug Fixes:
+- Description of bug fix 1
+
+### Other Changes:
+- Documentation updates
+- Code refactoring
+```
+
+### Release Summary Format
+
+```
+📋 Release Summary (v1.2.0):
+
+### Features:
+- feat(projects): modal-based editing system
+- feat(db): database seeding script
+
+### Bug Fixes:
+- fix(ui): RTL layout issues
+- fix(auth): login timeout
+
+### Other:
+- docs: updated README
+- chore: dependency updates
+```
+
+---
+
+**End of Git Policy Rules**
+
