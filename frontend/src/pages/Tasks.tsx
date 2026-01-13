@@ -52,7 +52,7 @@ export default function Tasks() {
 
 
   const currentUser = authService.getCurrentUserSync();
-  const isManager = currentUser?.role === 'PROJECT_MANAGER' || currentUser?.role === 'SUPER_ADMIN';
+  void currentUser; // Used for future role-based filtering
 
   const getPriorityColor = (priority: string) => {
     const colors: Record<string, string> = {

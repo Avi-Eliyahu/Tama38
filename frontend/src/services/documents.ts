@@ -32,7 +32,7 @@ class DocumentsService {
     return this.getDocuments({ owner_id: ownerId });
   }
 
-  async getDocumentsByUnit(unitId: string, ownerIds: string[]): Promise<Document[]> {
+  async getDocumentsByUnit(_unitId: string, ownerIds: string[]): Promise<Document[]> {
     // Get documents for all owners of a unit
     const allDocuments: Document[] = [];
     for (const ownerId of ownerIds) {

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { projectsService, Project } from '../services/projects';
 import { buildingsService, Building } from '../services/buildings';
 import { authService } from '../services/auth';
-import Breadcrumbs, { BreadcrumbItem } from '../components/Breadcrumbs';
+import { BreadcrumbItem } from '../components/Breadcrumbs';
 import Modal from '../components/Modal';
 import ProjectEditForm from '../components/ProjectEditForm';
 
@@ -16,7 +16,7 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [buildingsLoading, setBuildingsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
+  const [, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const navigate = useNavigate();
   const currentUser = authService.getCurrentUserSync();

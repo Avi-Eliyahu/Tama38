@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { dashboardService, DashboardData } from '../services/dashboard';
-import { authService } from '../services/auth';
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();

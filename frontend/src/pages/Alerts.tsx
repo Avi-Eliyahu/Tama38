@@ -4,7 +4,7 @@ import { authService } from '../services/auth';
 
 export default function Alerts() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [alertCount, setAlertCount] = useState<number>(0);
+  const [, setAlertCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   

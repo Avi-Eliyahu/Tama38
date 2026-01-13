@@ -1,12 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { signingService, SigningTokenInfo } from '../services/signing';
 
 type SigningStep = 'loading' | 'error' | 'review' | 'sign' | 'success';
 
 export default function SignDocument() {
   const { token } = useParams<{ token: string }>();
-  const navigate = useNavigate();
   const [step, setStep] = useState<SigningStep>('loading');
   const [tokenInfo, setTokenInfo] = useState<SigningTokenInfo | null>(null);
   const [error, setError] = useState<string | null>(null);

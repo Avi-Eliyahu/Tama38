@@ -96,35 +96,23 @@ class OwnersService {
     approval_task_id?: string;
     message: string;
   }> {
-    // If file is provided, use FormData; otherwise use JSON
-    if (signedContractFile) {
-      const formData = new FormData();
-      formData.append('owner_status', ownerStatus);
-      if (notes) {
-        formData.append('notes', notes);
-      }
-      formData.append('signed_contract_file', signedContractFile);
-
-      const response = await apiClient.put<{
-        owner_id: string;
-        owner_status: string;
-        approval_task_id?: string;
-        message: string;
-      }>(`/owners/${ownerId}/status`, formData);
-      return response.data;
-    } else {
-      // Use JSON for other status changes
-      const response = await apiClient.put<{
-        owner_id: string;
-        owner_status: string;
-        approval_task_id?: string;
-        message: string;
-      }>(`/owners/${ownerId}/status`, {
-        owner_status: ownerStatus,
-        notes,
-      });
-      return response.data;
+    // API endpoint always expects FormData (Form(...) parameters)
+    const formData = new FormData();
+    formData.append('owner_status', ownerStatus);
+    if (notes) {
+      formData.append('notes', notes);
     }
+    if (signedContractFile) {
+      formData.append('signed_contract_file', signedContractFile);
+    }
+
+    const response = await apiClient.put<{
+      owner_id: string;
+      owner_status: string;
+      approval_task_id?: string;
+      message: string;
+    }>(`/owners/${ownerId}/status`, formData);
+    return response.data;
   }
 }
 

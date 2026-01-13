@@ -49,20 +49,8 @@ class AuthService {
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth.ts:38',message:'authService.login entry',data:{email:credentials.email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-    
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth.ts:40',message:'Before apiClient.post call',data:{url:'/auth/login'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
-      
       const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth.ts:43',message:'apiClient.post completed',data:{status:response.status,hasData:!!response.data},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
       
       const { access_token, refresh_token, user } = response.data;
       
@@ -77,10 +65,6 @@ class AuthService {
       
       return response.data;
     } catch (error: any) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth.ts:56',message:'authService.login error',data:{error:error?.message,status:error?.response?.status,code:error?.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
-      
       console.error('[AUTH] Login failed', error);
       throw error;
     }

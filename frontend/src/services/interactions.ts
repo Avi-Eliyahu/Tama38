@@ -43,7 +43,7 @@ class InteractionsService {
     return this.getInteractions(ownerId);
   }
 
-  async getInteractionsByUnit(unitId: string, ownerIds: string[]): Promise<Interaction[]> {
+  async getInteractionsByUnit(_unitId: string, ownerIds: string[]): Promise<Interaction[]> {
     // Get interactions for all owners of a unit
     const allInteractions: Interaction[] = [];
     for (const ownerId of ownerIds) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { agentsService, Lead, AgentDashboard } from '../services/agents';
 import { interactionsService, CreateInteractionDto } from '../services/interactions';
 import { tasksService, Task } from '../services/tasks';
@@ -8,6 +9,7 @@ import { authService } from '../services/auth';
 type View = 'dashboard' | 'leads' | 'tasks' | 'quick-log' | 'scanner';
 
 export default function AgentMobile() {
+  const { t } = useTranslation();
   const [view, setView] = useState<View>('dashboard');
   const [dashboard, setDashboard] = useState<AgentDashboard | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -141,8 +143,27 @@ export default function AgentMobile() {
       WAIT_FOR_SIGN: 'bg-purple-100 text-purple-800',
       SIGNED: 'bg-green-100 text-green-800',
       REFUSED: 'bg-red-100 text-red-800',
+      AGREED_TO_SIGN: 'bg-blue-100 text-blue-800',
+      PENDING_SIGNATURE: 'bg-yellow-100 text-yellow-800',
+      DECEASED: 'bg-gray-100 text-gray-800',
+      INCAPACITATED: 'bg-gray-100 text-gray-800',
     };
     return colors[status] || colors.NOT_CONTACTED;
+  };
+
+  const getOwnerStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      NOT_CONTACTED: t('owners.statusLabels.NOT_CONTACTED'),
+      PENDING_SIGNATURE: t('owners.statusLabels.PENDING_SIGNATURE'),
+      NEGOTIATING: t('owners.statusLabels.NEGOTIATING'),
+      AGREED_TO_SIGN: t('owners.statusLabels.AGREED_TO_SIGN'),
+      WAIT_FOR_SIGN: t('owners.statusLabels.WAIT_FOR_SIGN'),
+      SIGNED: t('owners.statusLabels.SIGNED'),
+      REFUSED: t('owners.statusLabels.REFUSED'),
+      DECEASED: t('owners.statusLabels.DECEASED'),
+      INCAPACITATED: t('owners.statusLabels.INCAPACITATED'),
+    };
+    return labels[status] || status.replace('_', ' ');
   };
 
   if (loading && !dashboard) {
@@ -156,7 +177,7 @@ export default function AgentMobile() {
     );
   }
 
-  const user = authService.getCurrentUser();
+  const user = authService.getCurrentUserSync();
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -165,7 +186,7 @@ export default function AgentMobile() {
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Agent Mobile</h1>
           <Link
-            to="/dashboard"
+            to="/projects"
             className="text-sm bg-teal-700 px-3 py-1 rounded"
           >
             Desktop
@@ -318,7 +339,7 @@ export default function AgentMobile() {
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(lead.owner_status)}`}
                     >
-                      {lead.owner_status.replace('_', ' ')}
+                      {getOwnerStatusLabel(lead.owner_status)}
                     </span>
                     {lead.days_since_contact !== null && lead.days_since_contact !== undefined && (
                       <span className="text-xs text-gray-500">

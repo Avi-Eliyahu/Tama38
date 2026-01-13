@@ -30,7 +30,7 @@ interface Owner {
   unit_index: number;
   full_name: string;
   id_number?: string;
-  phone?: string;
+  phone?: string; // Note: Wizard API accepts 'phone' but maps to 'phone_for_contact' in database
   email?: string;
   ownership_share_percent: number;
   preferred_contact_method?: string;
@@ -71,25 +71,9 @@ export default function ProjectWizard() {
 
   // Initialize wizard on mount
   useEffect(() => {
-    const initWizard = async () => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:74',message:'initWizard called',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
-      try {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:77',message:'startWizard API call starting',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
-        const response = await wizardService.startWizard();
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:79',message:'startWizard success',data:{draftId:response.draft_id,expiresAt:response.expires_at},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
-        setDraftId(response.draft_id);
+    const initWizard = async () => {      try {        const response = await wizardService.startWizard();        setDraftId(response.draft_id);
         console.log('[WIZARD] Started with draft_id:', response.draft_id);
-      } catch (err: any) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:83',message:'startWizard error',data:{error:err?.message,status:err?.response?.status,detail:err?.response?.data?.detail},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
-        console.error('[WIZARD] Error starting wizard', err);
+      } catch (err: any) {        console.error('[WIZARD] Error starting wizard', err);
         setError('Failed to initialize wizard. Please try again.');
       }
     };
@@ -100,70 +84,21 @@ export default function ProjectWizard() {
     setStep1Data((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleNext = async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:91',message:'handleNext called',data:{currentStep,draftId,step1DataProjectName:step1Data.project_name,buildingsCount:buildings.length,unitsCount:units.length,ownersCount:owners.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-    if (!draftId) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:93',message:'handleNext: no draftId',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
-      setError('Wizard not initialized');
+  const handleNext = async () => {    if (!draftId) {      setError('Wizard not initialized');
       return;
     }
 
     try {
       setSaving(true);
-      setError(null);
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:99',message:'handleNext: saving step',data:{currentStep,draftId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
-
-      // Save current step before moving forward
-      if (currentStep === 1) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:103',message:'saveStep1 API call',data:{draftId,step1DataKeys:Object.keys(step1Data)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-        await wizardService.saveStep1(draftId, step1Data);
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:105',message:'saveStep1 success',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-      } else if (currentStep === 2) {
-        if (buildings.length === 0) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:108',message:'validation: no buildings',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-          // #endregion
-          setError('Please add at least one building');
+      setError(null);      // Save current step before moving forward
+      if (currentStep === 1) {        await wizardService.saveStep1(draftId, step1Data);      } else if (currentStep === 2) {
+        if (buildings.length === 0) {          setError('Please add at least one building');
           return;
-        }
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:110',message:'saveStep2 API call',data:{draftId,buildingsCount:buildings.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-        await wizardService.saveStep2(draftId, { buildings });
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:111',message:'saveStep2 success',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-      } else if (currentStep === 3) {
-        if (units.length === 0) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:114',message:'validation: no units',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-          // #endregion
-          setError('Please add at least one unit');
+        }        await wizardService.saveStep2(draftId, { buildings });      } else if (currentStep === 3) {
+        if (units.length === 0) {          setError('Please add at least one unit');
           return;
-        }
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:116',message:'saveStep3 API call',data:{draftId,unitsCount:units.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-        await wizardService.saveStep3(draftId, { units });
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:117',message:'saveStep3 success',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-      } else if (currentStep === 4) {
-        if (owners.length === 0) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:120',message:'validation: no owners',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-          // #endregion
-          setError('Please add at least one owner');
+        }        await wizardService.saveStep3(draftId, { units });      } else if (currentStep === 4) {
+        if (owners.length === 0) {          setError('Please add at least one owner');
           return;
         }
         // Validate ownership shares sum to 100% per unit
@@ -173,44 +108,11 @@ export default function ProjectWizard() {
           unitOwnershipMap.set(owner.unit_index, current + owner.ownership_share_percent);
         });
         for (const [unitIndex, total] of unitOwnershipMap.entries()) {
-          if (Math.abs(total - 100) > 0.01) {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:129',message:'validation: ownership shares invalid',data:{unitIndex,total},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-            // #endregion
-            setError(`Unit ${unitIndex + 1} ownership shares must total 100% (currently ${total.toFixed(2)}%)`);
+          if (Math.abs(total - 100) > 0.01) {            setError(`Unit ${unitIndex + 1} ownership shares must total 100% (currently ${total.toFixed(2)}%)`);
             return;
           }
-        }
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:133',message:'saveStep4 API call',data:{draftId,ownersCount:owners.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-        await wizardService.saveStep4(draftId, { owners });
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:134',message:'saveStep4 success',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-      }
-
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:136',message:'handleNext: before setCurrentStep',data:{currentStep,nextStep:currentStep+1},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-      setCurrentStep(currentStep + 1);
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:138',message:'handleNext: after setCurrentStep',data:{currentStep,nextStep:currentStep+1},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-    } catch (err: any) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:140',message:'handleNext error',data:{error:err?.message,status:err?.response?.status,detail:err?.response?.data?.detail,currentStep},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
-      console.error('[WIZARD] Error saving step', err);
-      setError(err.response?.data?.detail || 'Failed to save step');
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:142',message:'handleNext: error set',data:{errorMessage:err.response?.data?.detail||'Failed to save step'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
-    } finally {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:144',message:'handleNext: finally block',data:{currentStep},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-      setSaving(false);
+        }        await wizardService.saveStep4(draftId, { owners });      }      setCurrentStep(currentStep + 1);    } catch (err: any) {      console.error('[WIZARD] Error saving step', err);
+      setError(err.response?.data?.detail || 'Failed to save step');    } finally {      setSaving(false);
     }
   };
 
@@ -221,35 +123,15 @@ export default function ProjectWizard() {
     }
   };
 
-  const handleSubmit = async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:152',message:'handleSubmit called',data:{draftId,currentStep},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-    if (!draftId) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:154',message:'handleSubmit: no draftId',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
-      setError('Wizard not initialized');
+  const handleSubmit = async () => {    if (!draftId) {      setError('Wizard not initialized');
       return;
     }
 
     try {
       setLoading(true);
-      setError(null);
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:161',message:'completeWizard API call',data:{draftId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
-      const result = await wizardService.completeWizard(draftId);
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:163',message:'completeWizard success',data:{projectId:result.project_id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
-      console.log('[WIZARD] Project created', result);
+      setError(null);      const result = await wizardService.completeWizard(draftId);      console.log('[WIZARD] Project created', result);
       navigate(`/projects/${result.project_id}`);
-    } catch (err: any) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/98aaee0a-d131-4306-bd8d-703acea62f78',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProjectWizard.tsx:166',message:'completeWizard error',data:{error:err?.message,status:err?.response?.status,detail:err?.response?.data?.detail},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
-      console.error('[WIZARD] Error completing wizard', err);
+    } catch (err: any) {      console.error('[WIZARD] Error completing wizard', err);
       setError(err.response?.data?.detail || 'Failed to create project');
     } finally {
       setLoading(false);

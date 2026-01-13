@@ -4,6 +4,7 @@ export interface Task {
   task_id: string;
   building_id?: string;
   owner_id?: string;
+  signature_id?: string;
   task_type: string;
   title: string;
   description?: string;
@@ -12,6 +13,8 @@ export interface Task {
   status: string;
   priority: string;
   created_at: string;
+  signed_document_id?: string;
+  signed_document_name?: string;
 }
 
 export interface CreateTaskDto {
@@ -40,7 +43,7 @@ class TasksService {
     return response.data;
   }
 
-  async getTasksByUnit(unitId: string, ownerIds: string[]): Promise<Task[]> {
+  async getTasksByUnit(_unitId: string, ownerIds: string[]): Promise<Task[]> {
     // Get tasks for all owners of a unit
     const allTasks: Task[] = [];
     for (const ownerId of ownerIds) {

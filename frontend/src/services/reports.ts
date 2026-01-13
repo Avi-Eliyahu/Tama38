@@ -28,7 +28,7 @@ class ReportsService {
   }
 
   async generateReport(request: ReportRequest): Promise<Blob> {
-    const response = await apiClient.post('/reports/generate', request, {
+    const response = await apiClient.post<Blob>('/reports/generate', request, {
       responseType: 'blob',
     });
     return response.data;

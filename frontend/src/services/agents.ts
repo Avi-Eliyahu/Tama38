@@ -42,7 +42,7 @@ class AgentsService {
   }
 
   async getMyAssignedOwners(): Promise<any[]> {
-    const response = await apiClient.get('/agents/my-assigned-owners');
+    const response = await apiClient.get<any[]>('/agents/my-assigned-owners');
     return response.data;
   }
 }

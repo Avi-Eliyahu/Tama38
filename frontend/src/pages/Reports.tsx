@@ -21,7 +21,7 @@ export default function Reports() {
   const [endDate, setEndDate] = useState<string>('');
 
   const currentUser = authService.getCurrentUserSync();
-  const isAgent = currentUser?.role === 'AGENT';
+  void currentUser; // Used for future role-based filtering
 
   useEffect(() => {
     loadData();

@@ -1,0 +1,23 @@
+# Global Project Rules
+- Maintain a clear separation between the /backend (Python) and /frontend (JavaScript) directories.
+- Ensure all API contracts match between Python schemas and Frontend services.
+- Always check for "dry" (Don't Repeat Yourself) principles across the stack.
+
+# Python (Backend) Standards
+- Use Type Hinting for all function signatures (e.g., `def get_user(id: int) -> User:`).
+- Follow PEP8 style guidelines.
+- Use structured logging instead of `print()` statements.
+- Ensure all database sessions/connections are properly closed or used within context managers.
+- Security: Sanitize all inputs and use Pydantic/Dataclasses for data validation.
+
+# JavaScript/TypeScript (Frontend) Standards
+- Prioritize functional components and Hooks (if using React).
+- Ensure every API call has a `try/catch` block or a global error handler.
+- Always include "Loading" and "Error" states for UI components fetching data.
+- Use `const` by default; only use `let` if the variable must be reassigned.
+- Security: Prevent XSS by avoiding `dangerouslySetInnerHTML` unless sanitized.
+
+# AI Review Protocol
+- When asked to "Review," prioritize finding logic bugs and type mismatches.
+- Check if backend changes require a migration or environment variable update.
+- Verify that frontend API calls match the actual Python route parameters.

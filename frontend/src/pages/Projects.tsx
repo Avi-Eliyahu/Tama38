@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { projectsService, Project } from '../services/projects';
 import { authService } from '../services/auth';
 import Modal from '../components/Modal';
@@ -8,7 +8,6 @@ import ProjectEditForm from '../components/ProjectEditForm';
 
 export default function Projects() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
