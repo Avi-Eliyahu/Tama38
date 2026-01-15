@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "dev-secret-key-change-in-production"
     JWT_SECRET_KEY: str = "dev-jwt-secret-change-in-production"
     JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 525600  # 1 year (365 * 24 * 60 minutes)
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 365  # 1 year
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 hours (NFR-SEC-007: Sessions must expire after 8 hours of inactivity)
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # 7 days (reasonable balance between security and usability)
     
     # API
     API_V1_PREFIX: str = "/api/v1"
