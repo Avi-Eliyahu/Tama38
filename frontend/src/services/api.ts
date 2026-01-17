@@ -22,15 +22,17 @@ const getApiUrl = (): string => {
     }
   }
   
-  // Fallback: try to detect if we're on EC2 by checking the current hostname
+  // Fallback: use the current hostname for backend (works for any IP)
+  // This automatically adapts to whatever IP/hostname the frontend is accessed from
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // If accessing via EC2 IP, use that IP for backend
-    if (hostname === '63.178.167.164' || hostname.includes('63.178.167.164')) {
-      return 'http://63.178.167.164:8000';
+    // If accessing via IP address or hostname, use same hostname with backend port
+    // This works for localhost, EC2 IP, or any domain - no hardcoded IPs needed!
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `http://${hostname}:8000`;
     }
   }
-  // Default fallback
+  // Default fallback for localhost
   return 'http://localhost:8000';
 };
 
