@@ -4,12 +4,24 @@
 import axios, { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 
 // Get API URL from environment or use fallback
-// For EC2 deployment, default to the EC2 IP if VITE_API_URL is not set
+// For EC2 deployment, default to the EC2 IP if VITE_API_URL is not set or invalid
 const getApiUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && envUrl.trim() !== '') {
-    return envUrl.trim();
+  
+  // Check if envUrl is valid (not empty, not just http://:port)
+  if (envUrl && envUrl.trim() !== '' && !envUrl.match(/^https?:\/\/:\d+$/)) {
+    const trimmed = envUrl.trim();
+    // Basic URL validation - must have protocol and host
+    try {
+      const url = new URL(trimmed);
+      if (url.hostname && url.hostname !== '') {
+        return trimmed;
+      }
+    } catch (e) {
+      // Invalid URL format, fall through to detection
+    }
   }
+  
   // Fallback: try to detect if we're on EC2 by checking the current hostname
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;

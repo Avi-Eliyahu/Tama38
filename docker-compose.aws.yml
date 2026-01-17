@@ -53,12 +53,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=${VITE_API_URL:-http://63.178.167.164:8000}
+        - VITE_API_URL=http://63.178.167.164:8000
     container_name: tama38_frontend
     ports:
       - "3000:3000"
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://63.178.167.164:8000}
+      - VITE_API_URL=http://63.178.167.164:8000
       - NODE_ENV=production
     depends_on:
       - backend
