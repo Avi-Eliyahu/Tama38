@@ -521,5 +521,33 @@
     "download": "Download",
     "viewFailed": "Failed to view document",
     "downloadFailed": "Failed to download document"
+  },
+  "users": {
+    "title": "User Management",
+    "subtitle": "Manage Project Managers and Agents",
+    "addUser": "Add User",
+    "addNewUser": "Add New User",
+    "noUsers": "No Users Found",
+    "getStarted": "Get started by adding a new user",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "phone": "Phone",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "password": "Password",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "passwordPlaceholder": "Minimum 6 characters",
+    "agent": "Agent",
+    "projectManager": "Project Manager",
+    "creating": "Creating...",
+    "createUser": "Create User",
+    "confirmDelete": "Are you sure you want to delete user \"{{name}}\" ({{email}})?",
+    "deleteSuccess": "User {{email}} deleted successfully",
+    "deleteError": "Failed to delete user",
+    "createSuccess": "User {{email}} created successfully",
+    "createError": "Failed to create user"
   }
 }
