@@ -10,28 +10,10 @@ from app.core.config import settings
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against a hash"""
-    import json
-    import os
-    
-    # #region agent log
-    with open('/app/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"security.py:11","message":"verify_password called","data":{"has_plain":bool(plain_password),"has_hashed":bool(hashed_password)},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"G"})+"\n")
-    # #endregion
-    
     try:
         result = bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
-        
-        # #region agent log
-        with open('/app/.cursor/debug.log', 'a') as f:
-            f.write(json.dumps({"location":"security.py:18","message":"verify_password completed","data":{"result":result},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"G"})+"\n")
-        # #endregion
-        
         return result
     except Exception as e:
-        # #region agent log
-        with open('/app/.cursor/debug.log', 'a') as f:
-            f.write(json.dumps({"location":"security.py:23","message":"verify_password error","data":{"error":str(e)},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"G"})+"\n")
-        # #endregion
         raise
 
 
