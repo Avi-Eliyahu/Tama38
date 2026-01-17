@@ -3,7 +3,26 @@
  */
 import axios, { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Get API URL from environment or use fallback
+// For EC2 deployment, default to the EC2 IP if VITE_API_URL is not set
+const getApiUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    return envUrl.trim();
+  }
+  // Fallback: try to detect if we're on EC2 by checking the current hostname
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // If accessing via EC2 IP, use that IP for backend
+    if (hostname === '63.178.167.164' || hostname.includes('63.178.167.164')) {
+      return 'http://63.178.167.164:8000';
+    }
+  }
+  // Default fallback
+  return 'http://localhost:8000';
+};
+
+const API_URL = getApiUrl();
 
 class ApiClient {
   private client: AxiosInstance;
