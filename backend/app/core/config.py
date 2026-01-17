@@ -2,7 +2,10 @@
 Application configuration
 """
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 from typing import List, Union
+import json
+import os
 
 
 class Settings(BaseSettings):
@@ -27,6 +30,22 @@ class Settings(BaseSettings):
     # API
     API_V1_PREFIX: str = "/api/v1"
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    
+    @field_validator('CORS_ORIGINS', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS_ORIGINS from environment variable (supports JSON array or comma-separated string)"""
+        if isinstance(v, str):
+            # Try JSON first
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return parsed
+            except json.JSONDecodeError:
+                pass
+            # Fall back to comma-separated string
+            return [origin.strip() for origin in v.split(',') if origin.strip()]
+        return v
     
     # Storage (Phase 1 - Local)
     STORAGE_TYPE: str = "local"
