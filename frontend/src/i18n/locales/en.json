@@ -150,7 +150,10 @@
   "owners": {
     "title": "Owners",
     "subtitle": "Manage property owners",
+    "sectionTitle": "Owner Details",
+    "ownerLabel": "Owner",
     "ownerName": "Owner Name",
+    "idNumber": "ID Number",
     "phone": "Phone",
     "email": "Email",
     "status": "Status",
@@ -168,6 +171,11 @@
     "willAppear": "Owners will appear here once added through the project wizard or manually.",
     "searchPlaceholder": "Search by name, phone, or email...",
     "loadingOwners": "Loading owners...",
+    "validation": {
+      "nameRequired": "Owner name is required.",
+      "idOrPhoneRequired": "Provide at least an ID number or phone.",
+      "idOrPhoneNote": "ID number or phone is required for each owner."
+    },
     "changeStatus": "Change Owner Status",
     "currentStatus": "Current Status",
     "newStatus": "New Status",
@@ -357,6 +365,18 @@
     "deleteWarning": "This action cannot be undone. All owners associated with this unit will also be deleted.",
     "deleteCancelled": "Deletion cancelled",
     "noUnitsToAddOwner": "No units available. Please add a unit first.",
+    "fields": {
+      "unitNumber": "Unit Number",
+      "floorNumber": "Floor",
+      "area": "Square Meters"
+    },
+    "placeholders": {
+      "floorNumber": "1",
+      "area": "65.0"
+    },
+    "validation": {
+      "requiredFields": "Unit number, floor, and square meters are required."
+    },
     "status": {
       "title": "Signature Status",
       "signed": "Signed",
@@ -377,7 +397,123 @@
     "step4": "Owners",
     "step5": "Review",
     "complete": "Complete",
-    "reviewAndSubmit": "Review and Submit"
+    "reviewAndSubmit": "Review and Submit",
+    "title": "Create New Project",
+    "subtitle": "Step-by-step project creation wizard",
+    "initializing": "Initializing wizard...",
+    "creating": "Creating...",
+    "steps": {
+      "projectInfo": {
+        "title": "Project Info",
+        "description": "Basic project information"
+      },
+      "buildings": {
+        "title": "Buildings",
+        "description": "Add buildings to the project"
+      },
+      "units": {
+        "title": "Units",
+        "description": "Define units for each building"
+      },
+      "owners": {
+        "title": "Owners",
+        "description": "Add owners to units"
+      },
+      "review": {
+        "title": "Review",
+        "description": "Review and complete"
+      }
+    },
+    "fields": {
+      "projectName": "Project Name",
+      "projectCode": "Project Code",
+      "projectType": "Project Type",
+      "city": "City",
+      "requiredMajority": "Required Majority %",
+      "address": "Address",
+      "calculationType": "Calculation Type",
+      "buildingName": "Building Name",
+      "buildingCode": "Building Code",
+      "floorCount": "Floor Count",
+      "building": "Building",
+      "unitNumber": "Unit Number",
+      "floorNumber": "Floor Number",
+      "area": "Area (sqm)",
+      "unit": "Unit",
+      "ownerName": "Full Name",
+      "phone": "Phone",
+      "email": "Email",
+      "ownershipShare": "Ownership Share %"
+    },
+    "placeholders": {
+      "projectName": "e.g., Tel Aviv Central Renewal",
+      "projectCode": "e.g., TLV-CENTRAL-001",
+      "city": "e.g., Tel Aviv",
+      "address": "Full address",
+      "buildingName": "e.g., Building A",
+      "buildingCode": "e.g., BLDG-A",
+      "unitNumber": "e.g., 101"
+    },
+    "options": {
+      "projectType": {
+        "tama38_1": "TAMA38 Type 1",
+        "tama38_2": "TAMA38 Type 2",
+        "pinuiBinui": "Pinui Binui"
+      },
+      "calculationType": {
+        "headcount": "Headcount",
+        "area": "Area",
+        "weighted": "Weighted",
+        "custom": "Custom"
+      }
+    },
+    "helper": {
+      "addBuildings": "Add buildings to this project",
+      "addUnits": "Add units to buildings",
+      "addOwners": "Add owners to units"
+    },
+    "buttons": {
+      "addBuilding": "Add Building",
+      "addUnit": "Add Unit",
+      "addOwner": "Add Owner"
+    },
+    "empty": {
+      "buildings": "No buildings added yet. Click \"Add Building\" to get started.",
+      "units": "No units added yet. Click \"Add Unit\" to get started.",
+      "owners": "No owners added yet. Click \"Add Owner\" to get started."
+    },
+    "labels": {
+      "building": "Building {{index}}",
+      "buildingDefault": "Building",
+      "unit": "Unit {{index}}",
+      "owner": "Owner {{index}}",
+      "unitShort": "Unit {{unit}}"
+    },
+    "note": {
+      "title": "Note:",
+      "ownership": "Ownership shares for each unit must total 100%."
+    },
+    "review": {
+      "title": "Review Project Details",
+      "projectInfo": "Project Information",
+      "buildings": "Buildings ({{count}})",
+      "units": "Units ({{count}})",
+      "owners": "Owners ({{count}})",
+      "readyTitle": "Ready to create?",
+      "readyDescription": "Click \"Complete\" below to create the project with all buildings, units, and owners."
+    },
+    "errors": {
+      "notInitialized": "Wizard not initialized",
+      "initFailed": "Failed to initialize wizard. Please try again.",
+      "needBuilding": "Please add at least one building",
+      "needUnit": "Please add at least one unit",
+      "needOwner": "Please add at least one owner",
+      "addBuildingFirst": "Please add buildings first",
+      "addUnitFirst": "Please add units first",
+      "ownershipTotal": "Unit {{unit}} ownership shares must total 100% (currently {{total}}%)",
+      "saveFailed": "Failed to save step",
+      "createFailed": "Failed to create project"
+    }
   },
   "documents": {
     "view": "View",

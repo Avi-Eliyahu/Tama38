@@ -33,7 +33,7 @@ services:
       - ENVIRONMENT=production
       - DEBUG=false
       - LOG_LEVEL=INFO
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://EC2_PUBLIC_IP:3000}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://63.178.167.164:3000}
     volumes:
       - backend_logs:/app/logs
       - backend_storage:/app/storage
@@ -53,12 +53,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=${VITE_API_URL:-http://EC2_PUBLIC_IP:8000}
+        - VITE_API_URL=${VITE_API_URL:-http://63.178.167.164:8000}
     container_name: tama38_frontend
     ports:
       - "3000:3000"
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://EC2_PUBLIC_IP:8000}
+      - VITE_API_URL=${VITE_API_URL:-http://63.178.167.164:8000}
       - NODE_ENV=production
     depends_on:
       - backend

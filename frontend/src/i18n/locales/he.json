@@ -140,7 +140,11 @@
   "owners": {
     "title": "בעלים",
     "subtitle": "ניהול בעלי נכסים",
+    "sectionTitle": "פרטי בעלים",
+    "ownerLabel": "בעלים",
+    "addOwner": "הוסף בעלים",
     "ownerName": "שם הבעלים",
+    "idNumber": "תעודת זהות",
     "phone": "טלפון",
     "email": "אימייל",
     "status": "סטטוס",
@@ -158,6 +162,11 @@
     "willAppear": "בעלים יופיעו כאן לאחר הוספה דרך אשף הפרויקט או ידנית.",
     "searchPlaceholder": "חפש לפי שם, טלפון או אימייל...",
     "loadingOwners": "טוען בעלים...",
+    "validation": {
+      "nameRequired": "יש להזין שם בעלים.",
+      "idOrPhoneRequired": "יש להזין לפחות תעודת זהות או טלפון.",
+      "idOrPhoneNote": "לכל בעלים חובה להזין תעודת זהות או טלפון."
+    },
     "changeStatus": "שנה סטטוס בעלים",
     "currentStatus": "סטטוס נוכחי",
     "newStatus": "סטטוס חדש",
@@ -318,7 +327,123 @@
     "step4": "בעלים",
     "step5": "סקירה",
     "complete": "השלם",
-    "reviewAndSubmit": "סקור ושלח"
+    "reviewAndSubmit": "סקור ושלח",
+    "title": "יצירת פרויקט חדש",
+    "subtitle": "אשף יצירת פרויקט שלב-אחר-שלב",
+    "initializing": "מאתחל את האשף...",
+    "creating": "יוצר...",
+    "steps": {
+      "projectInfo": {
+        "title": "פרטי הפרויקט",
+        "description": "מידע בסיסי על הפרויקט"
+      },
+      "buildings": {
+        "title": "בניינים",
+        "description": "הוספת בניינים לפרויקט"
+      },
+      "units": {
+        "title": "דירות",
+        "description": "הגדרת דירות לכל בניין"
+      },
+      "owners": {
+        "title": "בעלים",
+        "description": "הוספת בעלים לדירות"
+      },
+      "review": {
+        "title": "סקירה",
+        "description": "סקירה והשלמה"
+      }
+    },
+    "fields": {
+      "projectName": "שם הפרויקט",
+      "projectCode": "קוד הפרויקט",
+      "projectType": "סוג הפרויקט",
+      "city": "עיר",
+      "requiredMajority": "אחוז רוב נדרש",
+      "address": "כתובת",
+      "calculationType": "סוג חישוב",
+      "buildingName": "שם הבניין",
+      "buildingCode": "קוד בניין",
+      "floorCount": "מספר קומות",
+      "building": "בניין",
+      "unitNumber": "מספר דירה",
+      "floorNumber": "מספר קומה",
+      "area": "שטח (מ״ר)",
+      "unit": "דירה",
+      "ownerName": "שם מלא",
+      "phone": "טלפון",
+      "email": "אימייל",
+      "ownershipShare": "אחוז בעלות"
+    },
+    "placeholders": {
+      "projectName": "לדוגמה: התחדשות מרכז תל אביב",
+      "projectCode": "לדוגמה: TLV-CENTRAL-001",
+      "city": "לדוגמה: תל אביב",
+      "address": "כתובת מלאה",
+      "buildingName": "לדוגמה: בניין א",
+      "buildingCode": "לדוגמה: BLDG-A",
+      "unitNumber": "לדוגמה: 101"
+    },
+    "options": {
+      "projectType": {
+        "tama38_1": "תמ״א 38 סוג 1",
+        "tama38_2": "תמ״א 38 סוג 2",
+        "pinuiBinui": "פינוי-בינוי"
+      },
+      "calculationType": {
+        "headcount": "ראשי",
+        "area": "שטח",
+        "weighted": "משוקלל",
+        "custom": "מותאם"
+      }
+    },
+    "helper": {
+      "addBuildings": "הוסף בניינים לפרויקט",
+      "addUnits": "הוסף דירות לבניינים",
+      "addOwners": "הוסף בעלים לדירות"
+    },
+    "buttons": {
+      "addBuilding": "הוסף בניין",
+      "addUnit": "הוסף דירה",
+      "addOwner": "הוסף בעלים"
+    },
+    "empty": {
+      "buildings": "עדיין לא נוספו בניינים. לחץ על \"הוסף בניין\" כדי להתחיל.",
+      "units": "עדיין לא נוספו דירות. לחץ על \"הוסף דירה\" כדי להתחיל.",
+      "owners": "עדיין לא נוספו בעלים. לחץ על \"הוסף בעלים\" כדי להתחיל."
+    },
+    "labels": {
+      "building": "בניין {{index}}",
+      "buildingDefault": "בניין",
+      "unit": "דירה {{index}}",
+      "owner": "בעלים {{index}}",
+      "unitShort": "דירה {{unit}}"
+    },
+    "note": {
+      "title": "הערה:",
+      "ownership": "אחוזי הבעלות לכל דירה חייבים להסתכם ב-100%."
+    },
+    "review": {
+      "title": "סקירת פרטי הפרויקט",
+      "projectInfo": "מידע על הפרויקט",
+      "buildings": "בניינים ({{count}})",
+      "units": "דירות ({{count}})",
+      "owners": "בעלים ({{count}})",
+      "readyTitle": "מוכן ליצור?",
+      "readyDescription": "לחץ על \"השלם\" למטה כדי ליצור את הפרויקט עם כל הבניינים, הדירות והבעלים."
+    },
+    "errors": {
+      "notInitialized": "האשף לא אותחל",
+      "initFailed": "אתחול האשף נכשל. נסה שוב.",
+      "needBuilding": "יש להוסיף לפחות בניין אחד",
+      "needUnit": "יש להוסיף לפחות דירה אחת",
+      "needOwner": "יש להוסיף לפחות בעלים אחד",
+      "addBuildingFirst": "יש להוסיף קודם בניינים",
+      "addUnitFirst": "יש להוסיף קודם דירות",
+      "ownershipTotal": "אחוזי הבעלות בדירה {{unit}} חייבים להסתכם ב-100% (כעת {{total}}%)",
+      "saveFailed": "שמירת השלב נכשלה",
+      "createFailed": "יצירת הפרויקט נכשלה"
+    }
   },
   "documents": {
     "view": "הצג",
@@ -327,6 +452,25 @@
     "downloadFailed": "נכשל בהורדת המסמך"
   },
   "units": {
+    "addUnit": "הוסף דירה",
+    "editUnit": "ערוך דירה",
+    "confirmDelete": "האם אתה בטוח שברצונך למחוק דירה",
+    "typeConfirmDelete": "הקלד את מספר הדירה לאישור המחיקה",
+    "deleteWarning": "פעולה זו אינה ניתנת לביטול. כל הבעלים המשויכים לדירה יימחקו.",
+    "deleteCancelled": "המחיקה בוטלה",
+    "noUnitsToAddOwner": "אין דירות זמינות. יש להוסיף דירה קודם.",
+    "fields": {
+      "unitNumber": "מספר דירה",
+      "floorNumber": "קומה",
+      "area": "שטח במ״ר"
+    },
+    "placeholders": {
+      "floorNumber": "1",
+      "area": "65.0"
+    },
+    "validation": {
+      "requiredFields": "חובה להזין מספר דירה, קומה ושטח במ״ר."
+    },
     "status": {
       "title": "סטטוס חתימה",
       "signed": "חתום",
