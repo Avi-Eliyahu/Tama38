@@ -556,13 +556,57 @@ ssh -i tama38-keypair.pem ubuntu@YOUR_PUBLIC_IP
 
 Once connected to EC2, run the setup script:
 
-```bash
-# Download and run setup script
-curl -o setup_ec2.sh https://raw.githubusercontent.com/YOUR_REPO/tama38/develop-avraham-eliyahu/scripts/setup_ec2.sh
-# OR copy it manually via SCP first
+**Option A: Copy via SCP (Recommended - Works with private repos)**
 
+From your local machine (before SSH into EC2):
+```bash
+# Copy setup script to EC2
+scp -i tama38-keypair.pem scripts/setup_ec2.sh ec2-user@YOUR_PUBLIC_IP:/home/ec2-user/setup_ec2.sh
+```
+
+Then SSH into EC2 and run:
+```bash
+ssh -i tama38-keypair.pem ec2-user@YOUR_PUBLIC_IP
 chmod +x setup_ec2.sh
 ./setup_ec2.sh
+```
+
+**Option B: Clone Repository (Alternative)**
+
+If you prefer to clone the entire repository:
+```bash
+# SSH into EC2 first
+ssh -i tama38-keypair.pem ec2-user@YOUR_PUBLIC_IP
+
+# Install git if not present
+sudo yum install -y git  # For Amazon Linux
+# OR
+sudo apt-get install -y git  # For Ubuntu
+
+# Clone repository using HTTPS (works with public repos, no SSH keys needed)
+git clone https://github.com/Avi-Eliyahu/Tama38.git
+cd Tama38
+git checkout develop-avraham-eliyahu
+
+# Run setup script
+chmod +x scripts/setup_ec2.sh
+./scripts/setup_ec2.sh
+```
+
+**Note:** If the repository is private, you'll need to either:
+- Use HTTPS with a Personal Access Token: `git clone https://YOUR_TOKEN@github.com/Avi-Eliyahu/Tama38.git`
+- Or set up SSH keys on EC2 for GitHub (more complex)
+
+**Option C: Manual Copy (If repository is private and SCP not available)**
+
+If you can't use SCP, you can manually create the file on EC2:
+```bash
+ssh -i tama38-keypair.pem ec2-user@YOUR_PUBLIC_IP
+nano setup_ec2.sh
+# Copy and paste the contents of scripts/setup_ec2.sh from your local machine
+chmod +x setup_ec2.sh
+./setup_ec2.sh
+```
 
 # After setup, logout and login again for Docker group to take effect
 exit
@@ -587,9 +631,14 @@ docker-compose --version
 
 1. **Clone/Update Repository**
    ```bash
-   git clone <your-repo-url>
-   cd tama38
+   # Clone repository using HTTPS (works with public repos, no SSH keys needed)
+   git clone https://github.com/Avi-Eliyahu/Tama38.git
+   cd Tama38
+   git checkout develop-avraham-eliyahu
    git pull origin develop-avraham-eliyahu
+   
+   # If repository is private, use HTTPS with token:
+   # git clone https://YOUR_GITHUB_TOKEN@github.com/Avi-Eliyahu/Tama38.git
    ```
 
 2. **Create AWS Docker Compose File**
@@ -651,7 +700,11 @@ chmod +x scripts/deploy_aws.sh
    export CORS_ORIGINS="http://${EC2_PUBLIC_IP}:3000"
    
    # Build and start containers
+   # Note: Use docker-compose (v1) or ensure buildx is installed for docker compose (v2)
    docker-compose -f docker-compose.aws.yml up -d --build
+   
+   # Alternative if using docker compose (v2) without buildx:
+   # DOCKER_BUILDKIT=0 docker compose -f docker-compose.aws.yml up -d --build
    
    # Wait for services to start
    sleep 15
@@ -674,7 +727,67 @@ cd ~/tama38
 docker-compose -f docker-compose.aws.yml exec backend python scripts/create_admin.py
 ```
 
-### Step 4: Verify Deployment
+### Step 4: Automated Deployment Setup (Optional but Recommended)
+
+For faster development cycles, set up automated deployment that detects changes and deploys only affected services.
+
+**Setup EC2 Configuration:**
+
+```powershell
+# Run the setup script
+.\scripts\setup_ec2_config.ps1
+```
+
+This will create `.ec2-config.json` with your EC2 connection details. This file is automatically ignored by git for security.
+
+**Automated Deployment Options:**
+
+1. **Auto-detect changed files from git:**
+   ```powershell
+   .\scripts\deploy_to_ec2.ps1 -Auto
+   ```
+   This detects files changed in the last commit and deploys only those.
+
+2. **Deploy specific files:**
+   ```powershell
+   .\scripts\deploy_to_ec2.ps1 -Files "backend/app/api/v1/auth.py", "frontend/src/pages/Login.tsx"
+   ```
+
+3. **Full deployment:**
+   ```powershell
+   .\scripts\deploy_to_ec2.ps1 -FullDeploy
+   ```
+
+**Smart Service Restart:**
+
+The script automatically determines which services need restarting:
+- Backend changes → Only backend container restarts
+- Frontend changes → Only frontend container restarts  
+- Docker config changes → Full restart with rebuild
+
+**Cursor AI Auto-Deployment:**
+
+When working on EC2-related fixes, Cursor AI will automatically deploy changes after commits. See `.cursor/rules/ec2_auto_deploy.cursorrules` for details.
+
+**Example Workflow:**
+
+```powershell
+# 1. Fix a bug in auth.py
+# 2. Commit the change
+git commit -m "fix: resolve login authentication issue"
+
+# 3. Auto-deploy (or let Cursor AI do it automatically)
+.\scripts\deploy_to_ec2.ps1 -Auto
+
+# Output:
+# ✓ Found 1 file(s) to deploy:
+#   - backend/app/api/v1/auth.py
+# ✓ Files copied successfully!
+# ✓ Restarting backend...
+# ✓ Deployment completed successfully!
+```
+
+### Step 5: Verify Deployment
 
 1. **Check Container Status**
    ```bash
@@ -981,7 +1094,77 @@ When debugging issues, Cursor AI can:
 2. Upgrade to t3.small (2GB RAM) - costs ~$15/month
 3. Or optimize: reduce Docker memory limits, use lighter images
 
-#### Issue 6: Instance Stopped Unexpectedly
+#### Issue 6: Git Clone Permission Denied (Publickey)
+
+**Symptoms:** `git clone git@github.com:...` fails with "Permission denied (publickey)"
+
+**Solutions:**
+1. **Use HTTPS instead** (recommended for public repos):
+   ```bash
+   git clone https://github.com/Avi-Eliyahu/Tama38.git
+   ```
+2. If repository is private, use HTTPS with token:
+   ```bash
+   git clone https://YOUR_GITHUB_TOKEN@github.com/Avi-Eliyahu/Tama38.git
+   ```
+3. Or set up SSH keys on EC2 (more complex):
+   ```bash
+   ssh-keygen -t ed25519 -C "ec2-user@ec2"
+   cat ~/.ssh/id_ed25519.pub
+   # Add this public key to your GitHub account
+   ```
+
+#### Issue 7: Docker Compose Build Requires Buildx
+
+**Symptoms:** `compose build requires buildx 0.17 or later` error when running `docker-compose up --build`
+
+**Solutions:**
+
+**Option A: Install Docker Buildx (Recommended)**
+```bash
+# Install buildx plugin
+mkdir -p ~/.docker/cli-plugins
+
+# Map architecture (uname -m to GitHub format)
+ARCH=$(uname -m)
+case "$ARCH" in
+    x86_64) BUILDX_ARCH="amd64" ;;
+    aarch64|arm64) BUILDX_ARCH="arm64" ;;
+    *) BUILDX_ARCH="amd64" ;;  # Default fallback
+esac
+
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+TAG=$(curl -s https://api.github.com/repos/docker/buildx/releases/latest | grep -m1 '"tag_name"' | cut -d'"' -f4)
+if [ -z "$TAG" ]; then TAG="v0.30.1"; fi
+
+BUILDX_URL="https://github.com/docker/buildx/releases/download/${TAG}/buildx-${TAG}.${OS}-${BUILDX_ARCH}"
+
+curl -L "$BUILDX_URL" -o ~/.docker/cli-plugins/docker-buildx
+chmod +x ~/.docker/cli-plugins/docker-buildx
+
+# Verify installation
+docker buildx version
+
+# Create and use buildx builder
+docker buildx create --use --name builder
+docker buildx inspect --bootstrap
+```
+
+**Option B: Use Docker Compose v1 (docker-compose with hyphen)**
+```bash
+# Use docker-compose (v1) instead of docker compose (v2)
+docker-compose -f docker-compose.aws.yml up -d --build
+```
+
+**Option C: Disable BuildKit (Workaround)**
+```bash
+# Disable BuildKit to use legacy builder
+DOCKER_BUILDKIT=0 docker compose -f docker-compose.aws.yml up -d --build
+```
+
+**Note:** The setup script (`setup_ec2.sh`) now installs buildx automatically.
+
+#### Issue 8: Instance Stopped Unexpectedly
 
 **Solutions:**
 1. Check AWS Console for reason
