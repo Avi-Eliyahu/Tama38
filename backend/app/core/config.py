@@ -29,23 +29,39 @@ class Settings(BaseSettings):
     
     # API
     API_V1_PREFIX: str = "/api/v1"
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    CORS_ORIGINS: Union[str, List[str]] = ["http://localhost:3000", "http://localhost:5173"]
     
     @field_validator('CORS_ORIGINS', mode='before')
     @classmethod
     def parse_cors_origins(cls, v):
         """Parse CORS_ORIGINS from environment variable (supports JSON array or comma-separated string)"""
+        if v is None:
+            return ["http://localhost:3000", "http://localhost:5173"]
+        if isinstance(v, list):
+            return v
         if isinstance(v, str):
             # Try JSON first
             try:
                 parsed = json.loads(v)
                 if isinstance(parsed, list):
                     return parsed
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, TypeError):
                 pass
-            # Fall back to comma-separated string
-            return [origin.strip() for origin in v.split(',') if origin.strip()]
+            # Fall back to comma-separated string or single string
+            if ',' in v:
+                return [origin.strip() for origin in v.split(',') if origin.strip()]
+            else:
+                # Single string - convert to list
+                return [v.strip()] if v.strip() else ["http://localhost:3000", "http://localhost:5173"]
         return v
+    
+    def get_cors_origins(self) -> List[str]:
+        """Get CORS_ORIGINS as a list"""
+        if isinstance(self.CORS_ORIGINS, str):
+            if ',' in self.CORS_ORIGINS:
+                return [origin.strip() for origin in self.CORS_ORIGINS.split(',') if origin.strip()]
+            return [self.CORS_ORIGINS.strip()] if self.CORS_ORIGINS.strip() else []
+        return self.CORS_ORIGINS if isinstance(self.CORS_ORIGINS, list) else []
     
     # Storage (Phase 1 - Local)
     STORAGE_TYPE: str = "local"
