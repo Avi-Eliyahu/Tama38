@@ -25,7 +25,14 @@
     "saving": "Saving...",
     "updating": "Updating...",
     "optional": "Optional",
-    "submitting": "Submitting..."
+    "submitting": "Submitting...",
+    "continue": "Continue",
+    "languages": {
+      "he": "Hebrew",
+      "en": "English",
+      "ar": "Arabic",
+      "ru": "Russian"
+    }
   },
   "auth": {
     "login": "Login",
@@ -124,6 +131,8 @@
     "noDocuments": "No documents found",
     "documentsWillAppear": "Documents will appear here once uploaded",
     "confirmDelete": "Are you sure you want to delete",
+    "typeConfirmDelete": "Type the building name to confirm deletion",
+    "deleteCancelled": "Deletion cancelled",
     "editBuilding": "Edit Building",
     "buildingCode": "Building Code",
     "ownersTabComingSoon": "Owners tab coming soon",
@@ -171,6 +180,25 @@
     "invalidStatusForAgent": "Agents can only set workflow statuses (NOT_CONTACTED, NEGOTIATING, AGREED_TO_SIGN, WAIT_FOR_SIGN)",
     "uploadSignedContract": "Upload Signed Contract PDF",
     "signedContractHint": "Upload the signed contract PDF file (required, max 10MB)",
+    "addOwner": "Add Owner",
+    "editOwner": "Edit Owner",
+    "confirmDelete": "Are you sure you want to delete owner",
+    "typeConfirmDelete": "Type the owner name to confirm deletion",
+    "deleteWarning": "This action cannot be undone.",
+    "deleteCancelled": "Deletion cancelled",
+    "selectUnitToAdd": "Select unit to add owner",
+    "selectUnitToAddOwner": "Select a unit to add an owner",
+    "idNumber": "ID Number",
+    "preferredContactMethod": "Preferred Contact Method",
+    "preferredLanguage": "Preferred Language",
+    "linkToExistingOwner": "Link to existing owner",
+    "searchExistingOwner": "Search for existing owner",
+    "selectedOwner": "Selected owner",
+    "contactMethods": {
+      "PHONE": "Phone",
+      "EMAIL": "Email",
+      "WHATSAPP": "WhatsApp"
+    },
     "statusLabels": {
       "NOT_CONTACTED": "Not Contacted",
       "PENDING_SIGNATURE": "Pending Signature",
@@ -322,6 +350,13 @@
     "availableReports": "Available Reports"
   },
   "units": {
+    "addUnit": "Add Unit",
+    "editUnit": "Edit Unit",
+    "confirmDelete": "Are you sure you want to delete unit",
+    "typeConfirmDelete": "Type the unit number to confirm deletion",
+    "deleteWarning": "This action cannot be undone. All owners associated with this unit will also be deleted.",
+    "deleteCancelled": "Deletion cancelled",
+    "noUnitsToAddOwner": "No units available. Please add a unit first.",
     "status": {
       "title": "Signature Status",
       "signed": "Signed",

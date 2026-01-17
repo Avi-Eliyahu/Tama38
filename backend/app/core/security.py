@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 import bcrypt
+import hashlib
 from app.core.config import settings
 
 
@@ -53,4 +54,50 @@ def decode_token(token: str) -> Optional[dict]:
         return payload
     except JWTError:
         return None
+
+
+def generate_id_hash(id_number: str) -> bytes:
+    """Generate a hash for ID number lookup (for multi-unit ownership linking)
+    
+    Uses SHA-256 with a salt to ensure privacy while allowing lookups.
+    Normalizes the input (removes spaces, converts to uppercase) before hashing.
+    """
+    if not id_number:
+        return None
+    
+    # Normalize: remove spaces, dashes, convert to uppercase
+    normalized = id_number.replace(' ', '').replace('-', '').upper()
+    
+    # Use a salt from settings (or default) to prevent rainbow table attacks
+    salt = getattr(settings, 'ID_HASH_SALT', 'tama38_owner_id_salt_v1').encode('utf-8')
+    
+    # Generate hash
+    hash_obj = hashlib.sha256()
+    hash_obj.update(salt)
+    hash_obj.update(normalized.encode('utf-8'))
+    
+    return hash_obj.digest()
+
+
+def generate_phone_hash(phone: str) -> bytes:
+    """Generate a hash for phone number lookup (for multi-unit ownership linking)
+    
+    Uses SHA-256 with a salt to ensure privacy while allowing lookups.
+    Normalizes the input (removes spaces, dashes, plus signs) before hashing.
+    """
+    if not phone:
+        return None
+    
+    # Normalize: remove spaces, dashes, plus signs
+    normalized = phone.replace(' ', '').replace('-', '').replace('+', '').replace('(', '').replace(')', '')
+    
+    # Use a salt from settings (or default) to prevent rainbow table attacks
+    salt = getattr(settings, 'PHONE_HASH_SALT', 'tama38_owner_phone_salt_v1').encode('utf-8')
+    
+    # Generate hash
+    hash_obj = hashlib.sha256()
+    hash_obj.update(salt)
+    hash_obj.update(normalized.encode('utf-8'))
+    
+    return hash_obj.digest()
 

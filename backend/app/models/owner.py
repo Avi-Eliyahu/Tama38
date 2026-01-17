@@ -53,5 +53,11 @@ class Owner(Base):
         Index('idx_owners_unit_id', 'unit_id'),
         Index('idx_owners_status', 'owner_status'),
         Index('idx_owners_agent', 'assigned_agent_id'),
+        # Indexes for multi-unit ownership lookups
+        Index('idx_owners_id_hash', 'id_number_hash'),
+        Index('idx_owners_phone_hash', 'phone_hash'),
+        # Composite unique constraint: prevent duplicate (person, unit) combinations
+        # Note: This is handled at application level since BYTEA columns can't be used in unique constraints directly
+        # We use application-level checks in the API instead
     )
 

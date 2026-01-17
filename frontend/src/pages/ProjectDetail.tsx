@@ -7,6 +7,8 @@ import { authService } from '../services/auth';
 import { BreadcrumbItem } from '../components/Breadcrumbs';
 import Modal from '../components/Modal';
 import ProjectEditForm from '../components/ProjectEditForm';
+import BuildingCreateForm from '../components/BuildingCreateForm';
+import BuildingEditForm from '../components/BuildingEditForm';
 
 export default function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -18,9 +20,16 @@ export default function ProjectDetail() {
   const [error, setError] = useState<string | null>(null);
   const [, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddBuildingModalOpen, setIsAddBuildingModalOpen] = useState(false);
+  const [editingBuilding, setEditingBuilding] = useState<Building | null>(null);
+  const [isEditBuildingModalOpen, setIsEditBuildingModalOpen] = useState(false);
+  const [deletingBuildingId, setDeletingBuildingId] = useState<string | null>(null);
+  const [deleteConfirmStep, setDeleteConfirmStep] = useState<number>(0);
   const navigate = useNavigate();
   const currentUser = authService.getCurrentUserSync();
   const isAdmin = currentUser?.role === 'SUPER_ADMIN';
+  const isManager = currentUser?.role === 'PROJECT_MANAGER';
+  const canEdit = isAdmin || isManager;
 
   useEffect(() => {
     if (projectId) {
@@ -106,6 +115,58 @@ export default function ProjectDetail() {
     }
   };
 
+  const handleAddBuilding = () => {
+    setIsAddBuildingModalOpen(true);
+  };
+
+  const handleSaveNewBuilding = (newBuilding: Building) => {
+    setBuildings([...buildings, newBuilding]);
+    setIsAddBuildingModalOpen(false);
+    loadBuildings(); // Reload to get latest data
+  };
+
+  const handleEditBuilding = (building: Building) => {
+    setEditingBuilding(building);
+    setIsEditBuildingModalOpen(true);
+  };
+
+  const handleSaveBuilding = (updatedBuilding: Building) => {
+    setBuildings(buildings.map(b => b.building_id === updatedBuilding.building_id ? updatedBuilding : b));
+    setIsEditBuildingModalOpen(false);
+    setEditingBuilding(null);
+    loadBuildings(); // Reload to get latest data
+  };
+
+  const handleDeleteBuilding = async (building: Building) => {
+    if (deleteConfirmStep === 0) {
+      setDeletingBuildingId(building.building_id);
+      setDeleteConfirmStep(1);
+      return;
+    }
+    
+    if (deleteConfirmStep === 1 && deletingBuildingId === building.building_id) {
+      // Second confirmation
+      const confirmText = prompt(`${t('buildings.confirmDelete')} "${building.building_name}"?\n${t('buildings.typeConfirmDelete')}: ${building.building_name}`);
+      if (confirmText === building.building_name) {
+        try {
+          await buildingsService.deleteBuilding(building.building_id);
+          setBuildings(buildings.filter(b => b.building_id !== building.building_id));
+          setDeletingBuildingId(null);
+          setDeleteConfirmStep(0);
+        } catch (err: any) {
+          console.error('[PROJECT_DETAIL] Error deleting building', err);
+          alert(err.response?.data?.detail || t('common.error'));
+          setDeletingBuildingId(null);
+          setDeleteConfirmStep(0);
+        }
+      } else {
+        alert(t('buildings.deleteCancelled'));
+        setDeletingBuildingId(null);
+        setDeleteConfirmStep(0);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -141,7 +202,7 @@ export default function ProjectDetail() {
           <h1 className="text-3xl font-bold text-gray-900">{project.project_name}</h1>
           <p className="mt-1 text-sm text-gray-500">{project.project_code}</p>
         </div>
-        {isAdmin && (
+        {canEdit && (
           <div className="flex gap-2">
             <button
               onClick={handleEditProject}
@@ -149,12 +210,14 @@ export default function ProjectDetail() {
             >
               {t('common.edit')}
             </button>
-            <button
-              onClick={() => handleDeleteProject(project)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-            >
-              {t('common.delete')}
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => handleDeleteProject(project)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+              >
+                {t('common.delete')}
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -198,12 +261,22 @@ export default function ProjectDetail() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">{t('buildings.title')}</h2>
-          <Link
-            to="/buildings"
-            className="text-sm text-teal-600 hover:text-teal-700 font-medium"
-          >
-            {t('projects.viewAll')} →
-          </Link>
+          <div className="flex items-center gap-3">
+            {canEdit && (
+              <button
+                onClick={handleAddBuilding}
+                className="px-3 py-1.5 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition-colors font-medium"
+              >
+                + {t('buildings.addBuilding')}
+              </button>
+            )}
+            <Link
+              to="/buildings"
+              className="text-sm text-teal-600 hover:text-teal-700 font-medium"
+            >
+              {t('projects.viewAll')} →
+            </Link>
+          </div>
         </div>
 
         {buildingsLoading ? (
@@ -222,11 +295,46 @@ export default function ProjectDetail() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {buildings.map((building) => (
-              <Link
+              <div
                 key={building.building_id}
-                to={`/buildings/${building.building_id}`}
-                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative"
               >
+                {canEdit && (
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditBuilding(building);
+                      }}
+                      className="p-1.5 bg-teal-600 text-white rounded hover:bg-teal-700 transition-colors"
+                      title={t('common.edit')}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteBuilding(building);
+                      }}
+                      className={`p-1.5 rounded transition-colors ${
+                        deletingBuildingId === building.building_id && deleteConfirmStep === 1
+                          ? 'bg-red-700 text-white'
+                          : 'bg-red-600 text-white hover:bg-red-700'
+                      }`}
+                      title={t('common.delete')}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+                <Link
+                  to={`/buildings/${building.building_id}`}
+                  className="block"
+                >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 mb-1">
@@ -301,7 +409,7 @@ export default function ProjectDetail() {
         )}
       </div>
 
-      {/* Edit Modal */}
+      {/* Edit Project Modal */}
       {project && (
         <Modal
           isOpen={isEditModalOpen}
@@ -315,6 +423,80 @@ export default function ProjectDetail() {
             onCancel={() => setIsEditModalOpen(false)}
           />
         </Modal>
+      )}
+
+      {/* Add Building Modal */}
+      {project && (
+        <Modal
+          isOpen={isAddBuildingModalOpen}
+          onClose={() => setIsAddBuildingModalOpen(false)}
+          title={t('buildings.addBuilding')}
+          size="lg"
+        >
+          <BuildingCreateForm
+            projectId={project.project_id}
+            onSave={handleSaveNewBuilding}
+            onCancel={() => setIsAddBuildingModalOpen(false)}
+          />
+        </Modal>
+      )}
+
+      {/* Edit Building Modal */}
+      {editingBuilding && (
+        <Modal
+          isOpen={isEditBuildingModalOpen}
+          onClose={() => {
+            setIsEditBuildingModalOpen(false);
+            setEditingBuilding(null);
+          }}
+          title={t('buildings.editBuilding')}
+          size="lg"
+        >
+          <BuildingEditForm
+            building={editingBuilding}
+            onSave={handleSaveBuilding}
+            onCancel={() => {
+              setIsEditBuildingModalOpen(false);
+              setEditingBuilding(null);
+            }}
+          />
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Alert */}
+      {deletingBuildingId && deleteConfirmStep === 1 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {t('buildings.confirmDelete')}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {t('buildings.deleteWarning')}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setDeletingBuildingId(null);
+                  setDeleteConfirmStep(0);
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={() => {
+                  const building = buildings.find(b => b.building_id === deletingBuildingId);
+                  if (building) {
+                    handleDeleteBuilding(building);
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                {t('common.continue')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
