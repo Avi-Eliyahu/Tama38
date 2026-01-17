@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: tama38_database
+    environment:
+      POSTGRES_DB: tama38_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tama38_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/tama38_hebrew_sample
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-jwt-secret-change-in-production}
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      # CORS_ORIGINS: Set dynamically - start.sh will detect EC2 IP if not provided
+      # For EC2 deployment, set this before running docker-compose:
+      # export CORS_ORIGINS="http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):3000,http://localhost:3000,http://localhost:5173"
+      # Or hardcode for current EC2: http://63.178.167.164:3000,http://localhost:3000,http://localhost:5173
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://63.178.167.164:3000,http://localhost:3000,http://localhost:5173}
+      - EC2_IP_ENV=${EC2_IP_ENV:-63.178.167.164}
+    volumes:
+      - backend_logs:/app/logs
+      - backend_storage:/app/storage
+      - ./backend/app:/app/app:ro
+      - ./backend/start.sh:/app/start.sh:ro
+    depends_on:
+      database:
+        condition: service_healthy
+    command: sh /app/start.sh
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # VITE_API_URL: Optional - if not set, frontend will auto-detect from hostname
+        # Set to override (e.g., http://YOUR_EC2_IP:8000)
+        - VITE_API_URL=${VITE_API_URL}
+    container_name: tama38_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # VITE_API_URL: Optional - frontend will auto-detect from window.location.hostname
+      # Set this only if you need to override the auto-detection
+      - VITE_API_URL=${VITE_API_URL}
+      - NODE_ENV=production
+    volumes:
+      - ./frontend/src:/app/src:ro
+      - ./frontend/public:/app/public:ro
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  backend_logs:
+  backend_storage:
+

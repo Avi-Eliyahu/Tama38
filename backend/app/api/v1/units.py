@@ -95,7 +95,7 @@ async def list_units(
 async def create_unit(
     unit_data: UnitCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
 ):
     """Create a new unit"""
     # Verify building exists
@@ -127,6 +127,14 @@ async def create_unit(
     db.add(unit)
     db.commit()
     db.refresh(unit)
+    
+    # Auto-update building.total_units
+    unit_count = db.query(Unit).filter(
+        Unit.building_id == unit.building_id,
+        Unit.is_deleted == False
+    ).count()
+    building.total_units = unit_count
+    db.commit()
     
     logger.info(
         "Unit created",
@@ -244,4 +252,130 @@ async def recalculate_unit_status(
         "total_owners": unit.total_owners,
         "owners_signed": unit.owners_signed,
     }
+
+
+class UnitUpdate(BaseModel):
+    floor_number: Optional[int] = None
+    unit_number: Optional[str] = None
+    unit_code: Optional[str] = None
+    area_sqm: Optional[float] = None
+    room_count: Optional[int] = None
+    estimated_value_ils: Optional[float] = None
+
+
+@router.put("/{unit_id}", response_model=UnitResponse)
+async def update_unit(
+    unit_id: UUID,
+    unit_data: UnitUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
+):
+    """Update unit (admin/manager only)"""
+    unit = db.query(Unit).filter(
+        Unit.unit_id == unit_id,
+        Unit.is_deleted == False
+    ).first()
+    
+    if not unit:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unit not found"
+        )
+    
+    # Update fields
+    if unit_data.floor_number is not None:
+        unit.floor_number = unit_data.floor_number
+    if unit_data.unit_number is not None:
+        unit.unit_number = unit_data.unit_number
+        # Regenerate unit_full_identifier
+        unit.unit_full_identifier = f"{unit.floor_number or 0}-{unit_data.unit_number}"
+    if unit_data.unit_code is not None:
+        unit.unit_code = unit_data.unit_code
+    if unit_data.area_sqm is not None:
+        unit.area_sqm = unit_data.area_sqm
+    if unit_data.room_count is not None:
+        unit.room_count = unit_data.room_count
+    if unit_data.estimated_value_ils is not None:
+        unit.estimated_value_ils = unit_data.estimated_value_ils
+    
+    db.commit()
+    db.refresh(unit)
+    
+    logger.info(
+        "Unit updated",
+        extra={
+            "unit_id": str(unit_id),
+            "user_id": str(current_user.user_id),
+        }
+    )
+    
+    return UnitResponse(
+        unit_id=str(unit.unit_id),
+        building_id=str(unit.building_id),
+        floor_number=unit.floor_number,
+        unit_number=unit.unit_number,
+        area_sqm=float(unit.area_sqm) if unit.area_sqm else None,
+        unit_status=unit.unit_status,
+        total_owners=unit.total_owners or 0,
+        owners_signed=unit.owners_signed or 0,
+        signature_percentage=float(unit.signature_percentage or 0),
+        created_at=unit.created_at,
+    )
+
+
+@router.delete("/{unit_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_unit(
+    unit_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
+):
+    """Hard delete unit (admin/manager only)"""
+    unit = db.query(Unit).filter(
+        Unit.unit_id == unit_id,
+        Unit.is_deleted == False
+    ).first()
+    
+    if not unit:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unit not found"
+        )
+    
+    building_id = unit.building_id
+    
+    # Check if unit has owners (prevent deletion if owners exist)
+    from app.models.owner import Owner
+    owner_count = db.query(Owner).filter(
+        Owner.unit_id == unit_id,
+        Owner.is_deleted == False
+    ).count()
+    
+    if owner_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot delete unit with {owner_count} owners. Please delete owners first."
+        )
+    
+    # Hard delete
+    db.delete(unit)
+    db.commit()
+    
+    # Auto-update building.total_units
+    building = db.query(Building).filter(Building.building_id == building_id).first()
+    if building:
+        unit_count = db.query(Unit).filter(
+            Unit.building_id == building_id,
+            Unit.is_deleted == False
+        ).count()
+        building.total_units = unit_count
+        db.commit()
+    
+    logger.info(
+        "Unit deleted",
+        extra={
+            "unit_id": str(unit_id),
+            "building_id": str(building_id),
+            "user_id": str(current_user.user_id),
+        }
+    )
 

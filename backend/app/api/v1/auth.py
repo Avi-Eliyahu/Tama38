@@ -61,14 +61,7 @@ async def login(
     request: Request = None
 ):
     """Authenticate user and return tokens"""
-    import json
-    import os
     request_id = getattr(request.state, 'request_id', None) if request else None
-    
-    # #region agent log
-    with open('/app/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"auth.py:49","message":"login endpoint called","data":{"email":login_data.email,"request_id":str(request_id)},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"E"})+"\n")
-    # #endregion
     
     logger.info(
         "Login attempt",
@@ -78,22 +71,7 @@ async def login(
         }
     )
     
-    # #region agent log
-    with open('/app/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"auth.py:66","message":"Before user query","data":{"email":login_data.email},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"F"})+"\n")
-    # #endregion
-    
     user = db.query(User).filter(User.email == login_data.email).first()
-    
-    # #region agent log
-    with open('/app/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"auth.py:68","message":"After user query","data":{"user_found":user is not None,"user_id":str(user.user_id) if user else None},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"F"})+"\n")
-    # #endregion
-    
-    # #region agent log
-    with open('/app/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"auth.py:70","message":"Before verify_password","data":{},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"G"})+"\n")
-    # #endregion
     
     if not user or not verify_password(login_data.password, user.hashed_password):
         logger.warning(
@@ -121,30 +99,14 @@ async def login(
             detail="User account is inactive",
         )
     
-    # #region agent log
-    import json
-    with open('/app/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"auth.py:95","message":"Password verified, before commit","data":{"user_id":str(user.user_id)},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"H"})+"\n")
-    # #endregion
-    
     # Update last login
     from datetime import datetime
     user.last_login = datetime.utcnow()
     db.commit()
     
-    # #region agent log
-    with open('/app/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"auth.py:100","message":"After commit, before token creation","data":{},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"I"})+"\n")
-    # #endregion
-    
     # Create tokens
     access_token = create_access_token(data={"sub": str(user.user_id), "role": user.role})
     refresh_token = create_refresh_token(data={"sub": str(user.user_id)})
-    
-    # #region agent log
-    with open('/app/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"auth.py:105","message":"Tokens created, before return","data":{"has_access_token":bool(access_token),"has_refresh_token":bool(refresh_token)},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"J"})+"\n")
-    # #endregion
     
     logger.info(
         "Login successful",
@@ -165,11 +127,6 @@ async def login(
             "role": user.role,
         }
     )
-    
-    # #region agent log
-    with open('/app/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"auth.py:125","message":"Before returning response","data":{},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"J"})+"\n")
-    # #endregion
     
     return response_data
 

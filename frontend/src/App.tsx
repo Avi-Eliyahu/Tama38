@@ -16,6 +16,7 @@ import Alerts from './pages/Alerts';
 import Reports from './pages/Reports';
 import SignDocument from './pages/SignDocument';
 import AgentMobile from './pages/AgentMobile';
+import Users from './pages/Users';
 import Layout from './components/Layout';
 import { authService } from './services/auth';
 
@@ -115,14 +116,6 @@ function App() {
           path="/interactions"
           element={
             <ProtectedRoute>
-              <Owners />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/interactions"
-          element={
-            <ProtectedRoute>
               <Interactions />
             </ProtectedRoute>
           }
@@ -164,6 +157,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AgentMobile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <Users />
             </ProtectedRoute>
           }
         />

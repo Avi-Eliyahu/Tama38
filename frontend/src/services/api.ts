@@ -3,7 +3,40 @@
  */
 import axios, { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Get API URL from environment or use fallback
+// For EC2 deployment, default to the EC2 IP if VITE_API_URL is not set or invalid
+const getApiUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  
+  // Check if envUrl is valid (not empty, not just http://:port)
+  if (envUrl && envUrl.trim() !== '' && !envUrl.match(/^https?:\/\/:\d+$/)) {
+    const trimmed = envUrl.trim();
+    // Basic URL validation - must have protocol and host
+    try {
+      const url = new URL(trimmed);
+      if (url.hostname && url.hostname !== '') {
+        return trimmed;
+      }
+    } catch (e) {
+      // Invalid URL format, fall through to detection
+    }
+  }
+  
+  // Fallback: use the current hostname for backend (works for any IP)
+  // This automatically adapts to whatever IP/hostname the frontend is accessed from
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // If accessing via IP address or hostname, use same hostname with backend port
+    // This works for localhost, EC2 IP, or any domain - no hardcoded IPs needed!
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `http://${hostname}:8000`;
+    }
+  }
+  // Default fallback for localhost
+  return 'http://localhost:8000';
+};
+
+const API_URL = getApiUrl();
 
 class ApiClient {
   private client: AxiosInstance;

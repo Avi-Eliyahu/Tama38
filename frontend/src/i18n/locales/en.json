@@ -25,7 +25,14 @@
     "saving": "Saving...",
     "updating": "Updating...",
     "optional": "Optional",
-    "submitting": "Submitting..."
+    "submitting": "Submitting...",
+    "continue": "Continue",
+    "languages": {
+      "he": "Hebrew",
+      "en": "English",
+      "ar": "Arabic",
+      "ru": "Russian"
+    }
   },
   "auth": {
     "login": "Login",
@@ -48,6 +55,7 @@
     "alerts": "Alerts",
     "reports": "Reports",
     "documents": "Documents",
+    "users": "Users",
     "agentMobile": "Agent Mobile"
   },
   "dashboard": {
@@ -124,6 +132,8 @@
     "noDocuments": "No documents found",
     "documentsWillAppear": "Documents will appear here once uploaded",
     "confirmDelete": "Are you sure you want to delete",
+    "typeConfirmDelete": "Type the building name to confirm deletion",
+    "deleteCancelled": "Deletion cancelled",
     "editBuilding": "Edit Building",
     "buildingCode": "Building Code",
     "ownersTabComingSoon": "Owners tab coming soon",
@@ -141,7 +151,10 @@
   "owners": {
     "title": "Owners",
     "subtitle": "Manage property owners",
+    "sectionTitle": "Owner Details",
+    "ownerLabel": "Owner",
     "ownerName": "Owner Name",
+    "idNumber": "ID Number",
     "phone": "Phone",
     "email": "Email",
     "status": "Status",
@@ -159,6 +172,11 @@
     "willAppear": "Owners will appear here once added through the project wizard or manually.",
     "searchPlaceholder": "Search by name, phone, or email...",
     "loadingOwners": "Loading owners...",
+    "validation": {
+      "nameRequired": "Owner name is required.",
+      "idOrPhoneRequired": "Provide at least an ID number or phone.",
+      "idOrPhoneNote": "ID number or phone is required for each owner."
+    },
     "changeStatus": "Change Owner Status",
     "currentStatus": "Current Status",
     "newStatus": "New Status",
@@ -171,6 +189,25 @@
     "invalidStatusForAgent": "Agents can only set workflow statuses (NOT_CONTACTED, NEGOTIATING, AGREED_TO_SIGN, WAIT_FOR_SIGN)",
     "uploadSignedContract": "Upload Signed Contract PDF",
     "signedContractHint": "Upload the signed contract PDF file (required, max 10MB)",
+    "addOwner": "Add Owner",
+    "editOwner": "Edit Owner",
+    "confirmDelete": "Are you sure you want to delete owner",
+    "typeConfirmDelete": "Type the owner name to confirm deletion",
+    "deleteWarning": "This action cannot be undone.",
+    "deleteCancelled": "Deletion cancelled",
+    "selectUnitToAdd": "Select unit to add owner",
+    "selectUnitToAddOwner": "Select a unit to add an owner",
+    "idNumber": "ID Number",
+    "preferredContactMethod": "Preferred Contact Method",
+    "preferredLanguage": "Preferred Language",
+    "linkToExistingOwner": "Link to existing owner",
+    "searchExistingOwner": "Search for existing owner",
+    "selectedOwner": "Selected owner",
+    "contactMethods": {
+      "PHONE": "Phone",
+      "EMAIL": "Email",
+      "WHATSAPP": "WhatsApp"
+    },
     "statusLabels": {
       "NOT_CONTACTED": "Not Contacted",
       "PENDING_SIGNATURE": "Pending Signature",
@@ -322,6 +359,25 @@
     "availableReports": "Available Reports"
   },
   "units": {
+    "addUnit": "Add Unit",
+    "editUnit": "Edit Unit",
+    "confirmDelete": "Are you sure you want to delete unit",
+    "typeConfirmDelete": "Type the unit number to confirm deletion",
+    "deleteWarning": "This action cannot be undone. All owners associated with this unit will also be deleted.",
+    "deleteCancelled": "Deletion cancelled",
+    "noUnitsToAddOwner": "No units available. Please add a unit first.",
+    "fields": {
+      "unitNumber": "Unit Number",
+      "floorNumber": "Floor",
+      "area": "Square Meters"
+    },
+    "placeholders": {
+      "floorNumber": "1",
+      "area": "65.0"
+    },
+    "validation": {
+      "requiredFields": "Unit number, floor, and square meters are required."
+    },
     "status": {
       "title": "Signature Status",
       "signed": "Signed",
@@ -342,12 +398,156 @@
     "step4": "Owners",
     "step5": "Review",
     "complete": "Complete",
-    "reviewAndSubmit": "Review and Submit"
+    "reviewAndSubmit": "Review and Submit",
+    "title": "Create New Project",
+    "subtitle": "Step-by-step project creation wizard",
+    "initializing": "Initializing wizard...",
+    "creating": "Creating...",
+    "steps": {
+      "projectInfo": {
+        "title": "Project Info",
+        "description": "Basic project information"
+      },
+      "buildings": {
+        "title": "Buildings",
+        "description": "Add buildings to the project"
+      },
+      "units": {
+        "title": "Units",
+        "description": "Define units for each building"
+      },
+      "owners": {
+        "title": "Owners",
+        "description": "Add owners to units"
+      },
+      "review": {
+        "title": "Review",
+        "description": "Review and complete"
+      }
+    },
+    "fields": {
+      "projectName": "Project Name",
+      "projectCode": "Project Code",
+      "projectType": "Project Type",
+      "city": "City",
+      "requiredMajority": "Required Majority %",
+      "address": "Address",
+      "calculationType": "Calculation Type",
+      "buildingName": "Building Name",
+      "buildingCode": "Building Code",
+      "floorCount": "Floor Count",
+      "building": "Building",
+      "unitNumber": "Unit Number",
+      "floorNumber": "Floor Number",
+      "area": "Area (sqm)",
+      "unit": "Unit",
+      "ownerName": "Full Name",
+      "phone": "Phone",
+      "email": "Email",
+      "ownershipShare": "Ownership Share %"
+    },
+    "placeholders": {
+      "projectName": "e.g., Tel Aviv Central Renewal",
+      "projectCode": "e.g., TLV-CENTRAL-001",
+      "city": "e.g., Tel Aviv",
+      "address": "Full address",
+      "buildingName": "e.g., Building A",
+      "buildingCode": "e.g., BLDG-A",
+      "unitNumber": "e.g., 101"
+    },
+    "options": {
+      "projectType": {
+        "tama38_1": "TAMA38 Type 1",
+        "tama38_2": "TAMA38 Type 2",
+        "pinuiBinui": "Pinui Binui"
+      },
+      "calculationType": {
+        "headcount": "Headcount",
+        "area": "Area",
+        "weighted": "Weighted",
+        "custom": "Custom"
+      }
+    },
+    "helper": {
+      "addBuildings": "Add buildings to this project",
+      "addUnits": "Add units to buildings",
+      "addOwners": "Add owners to units"
+    },
+    "buttons": {
+      "addBuilding": "Add Building",
+      "addUnit": "Add Unit",
+      "addOwner": "Add Owner"
+    },
+    "empty": {
+      "buildings": "No buildings added yet. Click \"Add Building\" to get started.",
+      "units": "No units added yet. Click \"Add Unit\" to get started.",
+      "owners": "No owners added yet. Click \"Add Owner\" to get started."
+    },
+    "labels": {
+      "building": "Building {{index}}",
+      "buildingDefault": "Building",
+      "unit": "Unit {{index}}",
+      "owner": "Owner {{index}}",
+      "unitShort": "Unit {{unit}}"
+    },
+    "note": {
+      "title": "Note:",
+      "ownership": "Ownership shares for each unit must total 100%."
+    },
+    "review": {
+      "title": "Review Project Details",
+      "projectInfo": "Project Information",
+      "buildings": "Buildings ({{count}})",
+      "units": "Units ({{count}})",
+      "owners": "Owners ({{count}})",
+      "readyTitle": "Ready to create?",
+      "readyDescription": "Click \"Complete\" below to create the project with all buildings, units, and owners."
+    },
+    "errors": {
+      "notInitialized": "Wizard not initialized",
+      "initFailed": "Failed to initialize wizard. Please try again.",
+      "needBuilding": "Please add at least one building",
+      "needUnit": "Please add at least one unit",
+      "needOwner": "Please add at least one owner",
+      "addBuildingFirst": "Please add buildings first",
+      "addUnitFirst": "Please add units first",
+      "ownershipTotal": "Unit {{unit}} ownership shares must total 100% (currently {{total}}%)",
+      "saveFailed": "Failed to save step",
+      "createFailed": "Failed to create project"
+    }
   },
   "documents": {
     "view": "View",
     "download": "Download",
     "viewFailed": "Failed to view document",
     "downloadFailed": "Failed to download document"
+  },
+  "users": {
+    "title": "User Management",
+    "subtitle": "Manage Project Managers and Agents",
+    "addUser": "Add User",
+    "addNewUser": "Add New User",
+    "noUsers": "No Users Found",
+    "getStarted": "Get started by adding a new user",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "phone": "Phone",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "password": "Password",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "passwordPlaceholder": "Minimum 6 characters",
+    "agent": "Agent",
+    "projectManager": "Project Manager",
+    "creating": "Creating...",
+    "createUser": "Create User",
+    "confirmDelete": "Are you sure you want to delete user \"{{name}}\" ({{email}})?",
+    "deleteSuccess": "User {{email}} deleted successfully",
+    "deleteError": "Failed to delete user",
+    "createSuccess": "User {{email}} created successfully",
+    "createError": "Failed to create user"
   }
 }

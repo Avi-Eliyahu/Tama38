@@ -13,6 +13,7 @@ const navigationKeys = [
   { key: 'alerts', href: '/alerts', icon: '🔔' },
   { key: 'documents', href: '/documents', icon: '📄' },
   { key: 'reports', href: '/reports', icon: '📊' },
+  { key: 'users', href: '/users', icon: '👤', roles: ['SUPER_ADMIN'] },
   { key: 'agentMobile', href: '/agent', icon: '📱', roles: ['AGENT'] },
 ];
 
@@ -22,14 +23,8 @@ export default function Sidebar() {
   const userRole = user?.role || '';
   const isRTL = ['he', 'ar'].includes(i18n.language);
 
-  // Translate navigation items
-  const navigation = navigationKeys.map((item) => ({
-    ...item,
-    name: t(`navigation.${item.key}`),
-  }));
-
-  // Filter navigation based on role
-  const filteredNav = navigation.filter((item) => {
+  // Filter navigation based on role FIRST, before translation
+  const filteredKeys = navigationKeys.filter((item) => {
     // Hide dashboard for agents
     if (item.href === '/dashboard' && userRole === 'AGENT') {
       return false;
@@ -37,12 +32,19 @@ export default function Sidebar() {
     if (item.href === '/approvals' && !['SUPER_ADMIN', 'PROJECT_MANAGER'].includes(userRole)) {
       return false;
     }
-    // Show Agent Mobile only for AGENT role
-    if ((item as any).roles && !(item as any).roles.includes(userRole)) {
-      return false;
+    // Items with roles property: only show if user role is in the roles array
+    if ((item as any).roles) {
+      return (item as any).roles.includes(userRole);
     }
+    // Items without roles property: show for everyone
     return true;
   });
+
+  // Translate navigation items AFTER filtering
+  const navigation = filteredKeys.map((item) => ({
+    ...item,
+    name: t(`navigation.${item.key}`, { defaultValue: item.key }),
+  }));
 
   return (
     <div className={`w-64 bg-white flex flex-col ${isRTL ? 'border-l border-gray-200' : 'border-r border-gray-200'}`}>
@@ -61,7 +63,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className={`flex-1 py-4 space-y-1 ${isRTL ? 'px-4' : 'px-4'}`}>
-        {filteredNav.map((item) => (
+        {navigation.map((item) => (
           <NavLink
             key={item.name}
             to={item.href}

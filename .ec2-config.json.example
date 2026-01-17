@@ -1,0 +1,7 @@
+{
+  "EC2PublicIP": "63.178.167.164",
+  "EC2User": "ec2-user",
+  "SSHKey": "C:\\Users\\aviel\\.ssh\\tama38-keypair.pem",
+  "AutoDeploy": true
+}
+

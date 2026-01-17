@@ -106,7 +106,7 @@ async def list_buildings(
 async def create_building(
     building_data: BuildingCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
 ):
     """Create a new building"""
     # Verify project exists
@@ -323,5 +323,49 @@ async def update_building(
         units_partially_signed=building.units_partially_signed or 0,
         units_not_signed=building.units_not_signed or 0,
         created_at=building.created_at,
+    )
+
+
+@router.delete("/{building_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_building(
+    building_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
+):
+    """Hard delete building (admin/manager only)"""
+    building = db.query(Building).filter(
+        Building.building_id == building_id,
+        Building.is_deleted == False
+    ).first()
+    
+    if not building:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Building not found"
+        )
+    
+    # Check if building has units (prevent deletion if units exist)
+    from app.models.unit import Unit
+    unit_count = db.query(Unit).filter(
+        Unit.building_id == building_id,
+        Unit.is_deleted == False
+    ).count()
+    
+    if unit_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot delete building with {unit_count} units. Please delete units first."
+        )
+    
+    # Hard delete
+    db.delete(building)
+    db.commit()
+    
+    logger.info(
+        "Building deleted",
+        extra={
+            "building_id": str(building_id),
+            "user_id": str(current_user.user_id),
+        }
     )
 

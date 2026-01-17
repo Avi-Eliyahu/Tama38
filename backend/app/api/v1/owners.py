@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from app.core.database import get_db
 from app.core.config import settings
+from app.core.security import generate_id_hash, generate_phone_hash
 from app.models.user import User
 from app.models.owner import Owner
 from app.models.unit import Unit
@@ -120,7 +121,7 @@ async def list_owners(
 async def create_owner(
     owner_data: OwnerCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
 ):
     """Create a new owner (with multi-unit support)"""
     # Verify unit exists
@@ -148,6 +149,30 @@ async def create_owner(
                 detail="Existing owner not found"
             )
         
+        # Verify this owner doesn't already own this unit
+        # Check by ID hash first (most reliable), then phone hash
+        existing_unit_owner = None
+        if existing_owner.id_number_hash:
+            existing_unit_owner = db.query(Owner).filter(
+                Owner.unit_id == UUID(owner_data.unit_id),
+                Owner.id_number_hash == existing_owner.id_number_hash,
+                Owner.is_deleted == False,
+                Owner.is_current_owner == True
+            ).first()
+        elif existing_owner.phone_hash:
+            existing_unit_owner = db.query(Owner).filter(
+                Owner.unit_id == UUID(owner_data.unit_id),
+                Owner.phone_hash == existing_owner.phone_hash,
+                Owner.is_deleted == False,
+                Owner.is_current_owner == True
+            ).first()
+        
+        if existing_unit_owner:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This owner already owns this unit"
+            )
+        
         # Create new owner record linked to same person (multi-unit ownership)
         owner = Owner(
             unit_id=UUID(owner_data.unit_id),
@@ -162,10 +187,56 @@ async def create_owner(
             assigned_agent_id=existing_owner.assigned_agent_id,
         )
     else:
+        # Generate hashes for new owner (required for multi-unit ownership support)
+        id_number_hash = None
+        phone_hash = None
+        
+        if owner_data.id_number:
+            id_number_hash = generate_id_hash(owner_data.id_number)
+            # Check if this ID already exists in this unit
+            existing_unit_owner = db.query(Owner).filter(
+                Owner.unit_id == UUID(owner_data.unit_id),
+                Owner.id_number_hash == id_number_hash,
+                Owner.is_deleted == False,
+                Owner.is_current_owner == True
+            ).first()
+            
+            if existing_unit_owner:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="An owner with this ID number already owns this unit"
+                )
+        
+        if owner_data.phone:
+            phone_hash = generate_phone_hash(owner_data.phone)
+            # Check if this phone already exists in this unit (only if no ID hash)
+            if not id_number_hash:
+                existing_unit_owner = db.query(Owner).filter(
+                    Owner.unit_id == UUID(owner_data.unit_id),
+                    Owner.phone_hash == phone_hash,
+                    Owner.is_deleted == False,
+                    Owner.is_current_owner == True
+                ).first()
+                
+                if existing_unit_owner:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="An owner with this phone number already owns this unit"
+                    )
+        
+        # Require at least ID number or phone for multi-unit ownership support
+        if not id_number_hash and not phone_hash:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Either ID number or phone number is required to support multi-unit ownership"
+            )
+        
         # Create new owner
         owner = Owner(
             unit_id=UUID(owner_data.unit_id),
             full_name=owner_data.full_name,
+            id_number_hash=id_number_hash,
+            phone_hash=phone_hash,
             phone_for_contact=owner_data.phone,
             email=owner_data.email,
             ownership_share_percent=owner_data.ownership_share_percent,
@@ -642,5 +713,37 @@ async def update_owner_status(
         owner_status=owner_status,
         approval_task_id=approval_task_id,
         message=message
+    )
+
+
+@router.delete("/{owner_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_owner(
+    owner_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("SUPER_ADMIN", "PROJECT_MANAGER"))
+):
+    """Hard delete owner (admin/manager only)"""
+    owner = db.query(Owner).filter(
+        Owner.owner_id == owner_id,
+        Owner.is_deleted == False
+    ).first()
+    
+    if not owner:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Owner not found"
+        )
+    
+    # Hard delete
+    db.delete(owner)
+    db.commit()
+    
+    logger.info(
+        "Owner deleted",
+        extra={
+            "owner_id": str(owner_id),
+            "unit_id": str(owner.unit_id),
+            "user_id": str(current_user.user_id),
+        }
     )
 

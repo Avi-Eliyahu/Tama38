@@ -5,33 +5,16 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 import bcrypt
+import hashlib
 from app.core.config import settings
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against a hash"""
-    import json
-    import os
-    
-    # #region agent log
-    with open('/app/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"security.py:11","message":"verify_password called","data":{"has_plain":bool(plain_password),"has_hashed":bool(hashed_password)},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"G"})+"\n")
-    # #endregion
-    
     try:
         result = bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
-        
-        # #region agent log
-        with open('/app/.cursor/debug.log', 'a') as f:
-            f.write(json.dumps({"location":"security.py:18","message":"verify_password completed","data":{"result":result},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"G"})+"\n")
-        # #endregion
-        
         return result
     except Exception as e:
-        # #region agent log
-        with open('/app/.cursor/debug.log', 'a') as f:
-            f.write(json.dumps({"location":"security.py:23","message":"verify_password error","data":{"error":str(e)},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"G"})+"\n")
-        # #endregion
         raise
 
 
@@ -71,4 +54,50 @@ def decode_token(token: str) -> Optional[dict]:
         return payload
     except JWTError:
         return None
+
+
+def generate_id_hash(id_number: str) -> bytes:
+    """Generate a hash for ID number lookup (for multi-unit ownership linking)
+    
+    Uses SHA-256 with a salt to ensure privacy while allowing lookups.
+    Normalizes the input (removes spaces, converts to uppercase) before hashing.
+    """
+    if not id_number:
+        return None
+    
+    # Normalize: remove spaces, dashes, convert to uppercase
+    normalized = id_number.replace(' ', '').replace('-', '').upper()
+    
+    # Use a salt from settings (or default) to prevent rainbow table attacks
+    salt = getattr(settings, 'ID_HASH_SALT', 'tama38_owner_id_salt_v1').encode('utf-8')
+    
+    # Generate hash
+    hash_obj = hashlib.sha256()
+    hash_obj.update(salt)
+    hash_obj.update(normalized.encode('utf-8'))
+    
+    return hash_obj.digest()
+
+
+def generate_phone_hash(phone: str) -> bytes:
+    """Generate a hash for phone number lookup (for multi-unit ownership linking)
+    
+    Uses SHA-256 with a salt to ensure privacy while allowing lookups.
+    Normalizes the input (removes spaces, dashes, plus signs) before hashing.
+    """
+    if not phone:
+        return None
+    
+    # Normalize: remove spaces, dashes, plus signs
+    normalized = phone.replace(' ', '').replace('-', '').replace('+', '').replace('(', '').replace(')', '')
+    
+    # Use a salt from settings (or default) to prevent rainbow table attacks
+    salt = getattr(settings, 'PHONE_HASH_SALT', 'tama38_owner_phone_salt_v1').encode('utf-8')
+    
+    # Generate hash
+    hash_obj = hashlib.sha256()
+    hash_obj.update(salt)
+    hash_obj.update(normalized.encode('utf-8'))
+    
+    return hash_obj.digest()
 

@@ -60,6 +60,8 @@ build/
 
 # Docker
 .dockerignore
+# Optional: Uncomment to ignore Docker environment preference
+# .docker-env
 
 # Coverage
 .coverage
@@ -84,3 +86,6 @@ id_ed25519.pub
 *.zip
 drive-download-*
 deployment-packages/
+
+# EC2 Configuration (contains sensitive connection details)
+.ec2-config.json

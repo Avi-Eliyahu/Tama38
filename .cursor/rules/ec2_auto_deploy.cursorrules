@@ -1,0 +1,103 @@
+# EC2 Auto-Deployment Rules
+
+## When to Auto-Deploy to EC2
+
+When working on EC2-related fixes or changes, automatically deploy to EC2 after committing changes.
+
+## Detection Criteria
+
+Auto-deploy should trigger when:
+1. **Files changed** match EC2-related patterns:
+   - `backend/**/*.py` - Backend code changes
+   - `frontend/src/**/*.{ts,tsx,js,jsx}` - Frontend code changes
+   - `docker-compose.aws.yml` - Docker configuration changes
+   - `scripts/**/*.py` - Script changes
+   - `backend/requirements.txt` - Backend dependencies
+   - `frontend/package.json` - Frontend dependencies
+
+2. **Commit messages** indicate EC2 work:
+   - Contains "EC2", "AWS", "deploy", "production"
+   - Contains "fix:" or "bug:" with EC2 context
+   - User explicitly mentions EC2 in conversation
+
+3. **Session context** indicates EC2 work:
+   - User mentions EC2 IP address (e.g., "63.178.167.164")
+   - User asks about EC2 deployment
+   - User reports issues with EC2 instance
+
+## Auto-Deployment Process
+
+When auto-deploy is triggered:
+
+1. **After committing changes**, automatically run:
+   ```powershell
+   .\scripts\deploy_to_ec2.ps1 -Auto
+   ```
+
+2. **If specific files are mentioned**, deploy only those:
+   ```powershell
+   .\scripts\deploy_to_ec2.ps1 -Files "backend/app/api/v1/auth.py"
+   ```
+
+3. **If docker-compose.aws.yml changed**, perform full deployment:
+   ```powershell
+   .\scripts\deploy_to_ec2.ps1 -FullDeploy
+   ```
+
+## Configuration
+
+EC2 connection details should be stored in `.ec2-config.json`:
+```json
+{
+  "EC2PublicIP": "63.178.167.164",
+  "EC2User": "ec2-user",
+  "SSHKey": "C:\\Users\\aviel\\.ssh\\tama38-keypair.pem",
+  "AutoDeploy": true
+}
+```
+
+**Note:** `.ec2-config.json` should be in `.gitignore` to avoid committing credentials.
+
+## Manual Override
+
+To disable auto-deployment for a specific change:
+- Set `AutoDeploy: false` in `.ec2-config.json`
+- Or explicitly tell the AI: "Don't deploy to EC2"
+
+## Deployment Behavior
+
+1. **Smart Detection**: Only restart services that were affected by changes
+   - Backend changes → restart backend container
+   - Frontend changes → restart frontend container
+   - Docker config changes → full restart
+
+2. **Incremental Deployment**: Copy only changed files, not entire directories
+
+3. **Migration Handling**: Automatically run Alembic migrations if backend changed
+
+4. **Error Handling**: If deployment fails, show clear error messages and suggest fixes
+
+## Post-Deployment
+
+After successful deployment:
+1. Verify services are running
+2. Show access URLs (Frontend, Backend API, API Docs)
+3. Suggest next steps if needed (e.g., create admin user)
+
+## Example Workflow
+
+**User:** "Fix the login bug in auth.py"
+**AI:** 
+1. Fixes the bug in `backend/app/api/v1/auth.py`
+2. Commits: `git commit -m "fix: resolve login authentication issue"`
+3. Auto-deploys: `.\scripts\deploy_to_ec2.ps1 -Files "backend/app/api/v1/auth.py"`
+4. Reports: "✓ Fixed and deployed to EC2. Backend restarted successfully."
+
+## Important Notes
+
+- **Never auto-deploy** if user is working on local development
+- **Always ask** before first-time deployment to a new EC2 instance
+- **Respect** `.ec2-config.json` settings
+- **Check** SSH connection before attempting deployment
+- **Verify** git status before deploying (don't deploy uncommitted changes unless explicitly requested)
+

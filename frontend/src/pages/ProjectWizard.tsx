@@ -72,7 +72,6 @@ export default function ProjectWizard() {
   // Initialize wizard on mount
   useEffect(() => {
     const initWizard = async () => {      try {        const response = await wizardService.startWizard();        setDraftId(response.draft_id);
-        console.log('[WIZARD] Started with draft_id:', response.draft_id);
       } catch (err: any) {        console.error('[WIZARD] Error starting wizard', err);
         setError('Failed to initialize wizard. Please try again.');
       }
@@ -129,7 +128,7 @@ export default function ProjectWizard() {
 
     try {
       setLoading(true);
-      setError(null);      const result = await wizardService.completeWizard(draftId);      console.log('[WIZARD] Project created', result);
+      setError(null);      const result = await wizardService.completeWizard(draftId);
       navigate(`/projects/${result.project_id}`);
     } catch (err: any) {      console.error('[WIZARD] Error completing wizard', err);
       setError(err.response?.data?.detail || 'Failed to create project');

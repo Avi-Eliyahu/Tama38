@@ -66,7 +66,7 @@ class OwnersService {
 
   async searchOwners(query: string): Promise<Owner[]> {
     const response = await apiClient.get<Owner[]>('/owners/search', {
-      params: { q: query },
+      params: { query: query },
     });
     return response.data;
   }

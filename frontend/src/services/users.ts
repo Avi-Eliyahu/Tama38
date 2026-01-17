@@ -9,6 +9,14 @@ export interface User {
   phone?: string;
 }
 
+export interface CreateUserData {
+  email: string;
+  password: string;
+  full_name: string;
+  role: 'PROJECT_MANAGER' | 'AGENT';
+  phone?: string;
+}
+
 class UsersService {
   async getUsers(role?: string): Promise<User[]> {
     const params = role ? { role } : {};
@@ -23,6 +31,15 @@ class UsersService {
   async getUser(userId: string): Promise<User> {
     const response = await apiClient.get<User>(`/users/${userId}`);
     return response.data;
+  }
+
+  async createUser(userData: CreateUserData): Promise<User> {
+    const response = await apiClient.post<User>('/users', userData);
+    return response.data;
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    await apiClient.delete(`/users/${userId}`);
   }
 }
 
