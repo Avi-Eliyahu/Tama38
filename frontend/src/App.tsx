@@ -115,14 +115,6 @@ function App() {
           path="/interactions"
           element={
             <ProtectedRoute>
-              <Owners />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/interactions"
-          element={
-            <ProtectedRoute>
               <Interactions />
             </ProtectedRoute>
           }
