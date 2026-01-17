@@ -33,17 +33,18 @@ services:
       - ENVIRONMENT=production
       - DEBUG=false
       - LOG_LEVEL=INFO
-      # CORS_ORIGINS: Set this to allow frontend access
-      # Default includes EC2 IP and localhost for development
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://63.178.167.164:3000,http://localhost:3000,http://localhost:5173}
+      # CORS_ORIGINS: Will be dynamically set by start.sh based on EC2 IP
+      # Can be overridden via environment variable if needed
+      - CORS_ORIGINS=${CORS_ORIGINS}
     volumes:
       - backend_logs:/app/logs
       - backend_storage:/app/storage
       - ./backend/app:/app/app:ro
+      - ./backend/start.sh:/app/start.sh:ro
     depends_on:
       database:
         condition: service_healthy
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: sh /app/start.sh
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

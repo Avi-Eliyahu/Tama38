@@ -57,12 +57,6 @@ class AuthService {
       this.setTokens(access_token, refresh_token);
       this.setCurrentUser(user);
       
-      console.log('[AUTH] Login successful', {
-        requestId: response.headers['x-request-id'],
-        userId: user.user_id,
-        role: user.role,
-      });
-      
       return response.data;
     } catch (error: any) {
       console.error('[AUTH] Login failed', error);

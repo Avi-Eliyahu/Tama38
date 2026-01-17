@@ -36,7 +36,6 @@ export default function Users() {
       ]);
       setUsers([...managers, ...agents]);
     } catch (err: any) {
-      console.error('[USERS] Error loading users', err);
       setError(err.response?.data?.detail || t('common.error'));
     } finally {
       setLoading(false);
@@ -96,7 +95,6 @@ export default function Users() {
       resetForm();
       loadUsers();
     } catch (err: any) {
-      console.error('[USERS] Error creating user', err);
       setError(err.response?.data?.detail || t('users.createError', 'Failed to create user'));
     } finally {
       setIsSubmitting(false);
@@ -125,7 +123,6 @@ export default function Users() {
         setSuccess(t('users.deleteSuccess', 'User {{email}} deleted successfully', { email: user.email }));
         loadUsers();
       } catch (err: any) {
-        console.error('[USERS] Error deleting user', err);
         setError(err.response?.data?.detail || t('users.deleteError', 'Failed to delete user'));
       }
     }
