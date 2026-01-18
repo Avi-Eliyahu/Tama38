@@ -404,6 +404,7 @@ export default function ProjectDetail() {
                   </div>
                 </div>
               </Link>
+              </div>
             ))}
           </div>
         )}

@@ -95,6 +95,44 @@ Windows PowerShell:
 ```
 Use `-Files` or `-FullDeploy` as needed.
 
+### 7) Initialize database and create admin user (required on first deploy)
+
+After the initial deployment, you need to:
+1. Create the database (if it doesn't exist)
+2. Run database migrations
+3. Create the admin user
+
+Windows PowerShell:
+```powershell
+# Create database (ignore error if it already exists)
+ssh -i C:\path\to\key.pem ec2-user@EC2_PUBLIC_IP "cd ~/tama38 && docker-compose -f docker-compose.aws.yml exec -T database psql -U postgres -c 'CREATE DATABASE tama38_hebrew_sample;' 2>&1 || echo 'Database may already exist'"
+
+# Run migrations
+ssh -i C:\path\to\key.pem ec2-user@EC2_PUBLIC_IP "cd ~/tama38 && docker-compose -f docker-compose.aws.yml exec -T backend alembic upgrade head"
+
+# Create admin user
+ssh -i C:\path\to\key.pem ec2-user@EC2_PUBLIC_IP "cd ~/tama38 && docker-compose -f docker-compose.aws.yml exec -T backend python scripts/create_admin.py"
+```
+
+Mac/Linux:
+```bash
+# Create database (ignore error if it already exists)
+ssh -i /path/to/key.pem ec2-user@EC2_PUBLIC_IP "cd ~/tama38 && docker-compose -f docker-compose.aws.yml exec -T database psql -U postgres -c 'CREATE DATABASE tama38_hebrew_sample;' 2>&1 || echo 'Database may already exist'"
+
+# Run migrations
+ssh -i /path/to/key.pem ec2-user@EC2_PUBLIC_IP "cd ~/tama38 && docker-compose -f docker-compose.aws.yml exec -T backend alembic upgrade head"
+
+# Create admin user
+ssh -i /path/to/key.pem ec2-user@EC2_PUBLIC_IP "cd ~/tama38 && docker-compose -f docker-compose.aws.yml exec -T backend python scripts/create_admin.py"
+```
+
+**Default Admin Credentials:**
+- Email: `admin@tama38.local`
+- Password: `Admin123!@#`
+- Role: `SUPER_ADMIN`
+
+Note: The `create_admin.py` script is idempotent - it won't create a duplicate if admin already exists.
+
 ## Post-deploy verification (run from local)
 ```
 curl http://EC2_PUBLIC_IP:8000/health
@@ -104,6 +142,10 @@ Expected: `{"status":"healthy"}`
 Access in browser:
 - Frontend: `http://EC2_PUBLIC_IP:3000`
 - Backend docs: `http://EC2_PUBLIC_IP:8000/docs`
+
+**Login with admin credentials:**
+- Email: `admin@tama38.local`
+- Password: `Admin123!@#`
 
 ## Troubleshooting quick checks
 - SSH connectivity:

@@ -16,7 +16,7 @@ from app.models.user import User
 from app.models.owner import Owner
 from app.models.unit import Unit
 from app.models.building import Building
-from app.api.dependencies import get_current_user
+from app.api.dependencies import get_current_user, require_role
 import logging
 import uuid
 
