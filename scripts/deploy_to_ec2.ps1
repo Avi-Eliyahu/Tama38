@@ -43,7 +43,7 @@ if (Test-Path $ec2ConfigPath) {
         Write-Host ""
         Write-Host "Example .ec2-config.json:" -ForegroundColor Cyan
         Write-Host '{' -ForegroundColor Gray
-        Write-Host '  "EC2PublicIP": "63.178.167.164",' -ForegroundColor Gray
+        Write-Host '  "EC2PublicIP": "YOUR_EC2_PUBLIC_IP",' -ForegroundColor Gray
         Write-Host '  "EC2User": "ec2-user",' -ForegroundColor Gray
         Write-Host '  "SSHKey": "C:\\Users\\aviel\\.ssh\\tama38-keypair.pem"' -ForegroundColor Gray
         Write-Host '}' -ForegroundColor Gray
