@@ -1,7 +1,7 @@
 /**
  * Authentication Service
  */
-import { apiClient } from './api';
+import { apiClient, API_URL } from './api';
 import axios from 'axios';
 
 export interface LoginCredentials {
@@ -72,7 +72,7 @@ class AuthService {
     try {
       // Temporarily remove token from apiClient to avoid infinite loop
       const tempClient = axios.create({
-        baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1`,
+        baseURL: `${API_URL}/api/v1`,
         headers: {
           'Content-Type': 'application/json',
         },

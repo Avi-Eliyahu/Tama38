@@ -17,17 +17,20 @@ if [ -z "$EC2_IP" ] && [ -n "$CORS_ORIGINS" ]; then
   EC2_IP=$(echo "$CORS_ORIGINS" | sed -n 's|.*http://\([0-9.]*\):3000.*|\1|p' | head -1)
 fi
 
-# Method 4: If still empty, try to get from hostname or use known EC2 IP
+# Method 4: If still empty, default to localhost-only CORS
 if [ -z "$EC2_IP" ]; then
-  # Fallback: use known EC2 IP (update this if your IP changes)
-  EC2_IP="63.178.167.164"
+  echo "EC2 IP not detected - defaulting CORS to localhost only"
 fi
 
 # Build CORS_ORIGINS dynamically - only if not already set
 if [ -z "$CORS_ORIGINS" ] || [ "$CORS_ORIGINS" = "" ]; then
-  # EC2 environment detected - add EC2 IP to CORS origins
-  export CORS_ORIGINS="http://${EC2_IP}:3000,http://localhost:3000,http://localhost:5173"
-  echo "Detected EC2 IP: ${EC2_IP}"
+  if [ -n "$EC2_IP" ]; then
+    # EC2 environment detected - add EC2 IP to CORS origins
+    export CORS_ORIGINS="http://${EC2_IP}:3000,http://localhost:3000,http://localhost:5173"
+    echo "Detected EC2 IP: ${EC2_IP}"
+  else
+    export CORS_ORIGINS="http://localhost:3000,http://localhost:5173"
+  fi
   echo "Setting CORS_ORIGINS: ${CORS_ORIGINS}"
 else
   # Use provided CORS_ORIGINS (clean it up - remove any leading/trailing spaces or quotes)

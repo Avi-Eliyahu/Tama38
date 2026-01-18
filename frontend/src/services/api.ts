@@ -36,7 +36,7 @@ const getApiUrl = (): string => {
   return 'http://localhost:8000';
 };
 
-const API_URL = getApiUrl();
+export const API_URL = getApiUrl();
 
 class ApiClient {
   private client: AxiosInstance;

@@ -21,9 +21,9 @@ This is the Phase 1 implementation of the TAMA38 Urban Renewal Management Platfo
    cd tama38
    ```
 
-2. **Copy environment file**
+2. **Copy environment file (optional)**
    ```bash
-   cp .env.example .env.local
+   cp .env.example .env
    ```
 
 3. **Start all services**

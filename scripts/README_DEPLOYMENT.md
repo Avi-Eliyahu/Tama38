@@ -71,7 +71,7 @@ After fixing bugs or making changes, deploy automatically:
 
 **Usage:**
 ```powershell
-.\scripts\deploy_aws.ps1 -EC2PublicIP "63.178.167.164" -EC2User "ec2-user"
+.\scripts\deploy_aws.ps1 -EC2PublicIP "YOUR_EC2_PUBLIC_IP" -EC2User "ec2-user"
 ```
 
 **When to use:**
@@ -105,7 +105,7 @@ When working on EC2-related fixes, Cursor AI will automatically deploy changes a
 `.ec2-config.json` structure:
 ```json
 {
-  "EC2PublicIP": "63.178.167.164",
+  "EC2PublicIP": "YOUR_EC2_PUBLIC_IP",
   "EC2User": "ec2-user",
   "SSHKey": "C:\\Users\\aviel\\.ssh\\tama38-keypair.pem",
   "AutoDeploy": true
@@ -133,7 +133,7 @@ When working on EC2-related fixes, Cursor AI will automatically deploy changes a
 ### SSH Connection Issues
 ```powershell
 # Test SSH connection
-ssh -i C:\Users\aviel\.ssh\tama38-keypair.pem ec2-user@63.178.167.164
+ssh -i C:\Users\aviel\.ssh\tama38-keypair.pem ec2-user@YOUR_EC2_PUBLIC_IP
 ```
 
 ### Permission Denied

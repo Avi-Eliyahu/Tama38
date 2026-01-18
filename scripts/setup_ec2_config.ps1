@@ -30,7 +30,7 @@ if (Test-Path $configPath) {
 
 # Get EC2 Public IP
 if (-not $EC2PublicIP) {
-    $EC2PublicIP = Read-Host "Enter EC2 Public IP (e.g., 63.178.167.164)"
+    $EC2PublicIP = Read-Host "Enter EC2 Public IP (e.g., 203.0.113.10)"
 }
 
 if (-not $EC2PublicIP) {
