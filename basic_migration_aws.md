@@ -5,7 +5,7 @@
 **Duration:** Few weeks (temporary testing environment)  
 **Cost:** $0/month (Free Tier) or ~$8-15/month after free tier  
 **Architecture:** Single EC2 instance running all services via Docker Compose  
-**Branch:** All AWS deployment changes are on `develop-avraham-eliyahu` branch (not merged to main)
+**Branch:** Use the current working branch that contains the AWS deployment changes
 
 ---
 

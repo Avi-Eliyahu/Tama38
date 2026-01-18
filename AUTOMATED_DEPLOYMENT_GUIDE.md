@@ -15,7 +15,7 @@ Configure your EC2 connection details:
 ```
 
 Follow the prompts to enter:
-- EC2 Public IP (e.g., `63.178.167.164`)
+- EC2 Public IP (e.g., `203.0.113.10`)
 - EC2 User (default: `ec2-user`)
 - SSH Key path (default: `C:\Users\aviel\.ssh\tama38-keypair.pem`)
 
@@ -74,8 +74,8 @@ git commit -m "fix: resolve login authentication issue"
 # Step 2: Restarting services on EC2...
 # ✓ Deployment completed successfully!
 # Access the application:
-#   Frontend: http://63.178.167.164:3000
-#   Backend API: http://63.178.167.164:8000
+#   Frontend: http://203.0.113.10:3000
+#   Backend API: http://203.0.113.10:8000
 ```
 
 ## Cursor AI Auto-Deployment
@@ -174,14 +174,14 @@ icacls C:\Users\aviel\.ssh\tama38-keypair.pem /grant:r "$env:USERNAME`:R"
 
 1. **Check SSH connection:**
    ```powershell
-   ssh -i C:\Users\aviel\.ssh\tama38-keypair.pem ec2-user@63.178.167.164
+   ssh -i C:\Users\aviel\.ssh\tama38-keypair.pem ec2-user@203.0.113.10
    ```
 
 2. **Check EC2 instance status** in AWS Console
 
 3. **Check Docker containers on EC2:**
    ```bash
-   ssh -i ... ec2-user@63.178.167.164
+   ssh -i ... ec2-user@203.0.113.10
    docker-compose -f docker-compose.aws.yml ps
    ```
 

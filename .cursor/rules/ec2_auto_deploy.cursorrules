@@ -21,7 +21,7 @@ Auto-deploy should trigger when:
    - User explicitly mentions EC2 in conversation
 
 3. **Session context** indicates EC2 work:
-   - User mentions EC2 IP address (e.g., "63.178.167.164")
+- User mentions EC2 IP address (e.g., "203.0.113.10")
    - User asks about EC2 deployment
    - User reports issues with EC2 instance
 
@@ -49,7 +49,7 @@ When auto-deploy is triggered:
 EC2 connection details should be stored in `.ec2-config.json`:
 ```json
 {
-  "EC2PublicIP": "63.178.167.164",
+  "EC2PublicIP": "YOUR_EC2_PUBLIC_IP",
   "EC2User": "ec2-user",
   "SSHKey": "C:\\Users\\aviel\\.ssh\\tama38-keypair.pem",
   "AutoDeploy": true
